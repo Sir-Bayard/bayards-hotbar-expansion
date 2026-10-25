@@ -2,7 +2,7 @@
 
 ## 0.3.0
 
-- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit hotbar": a window with all five pages of their hotbar. Drop macros (or roll tables, items and other documents) on it, drag to move or swap, click to edit or to make a new macro in an empty slot, right-click to remove from the slot or delete, Shift+right-click to delete. A macro you put on a player's hotbar that they can't see is shared with them (Observer). It replaces the hotbar-editing part of the Macro Grid module.
+- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit hotbar": a window with all five pages of their hotbar. Drop macros (or roll tables, items and other documents) on it, drag to move or swap, click to edit or to make a new macro in an empty slot, right-click to remove from the slot or delete, Shift+right-click to delete. A macro you put on a player's hotbar that they can't run is shared with them (Observer); one they already have Limited permission on is left alone. You're warned when a macro made from an item or journal entry points at something the player can't open. PF2e actions and strikes can't be dropped on another user's hotbar yet. It replaces the hotbar-editing part of the Macro Grid module.
 
 ## 0.2.0
 
