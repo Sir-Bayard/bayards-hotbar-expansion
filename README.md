@@ -51,8 +51,8 @@ To tell the rows apart at a glance, give the second row an accent color (setting
 
 - **Foundry's layout:** both rows sit side by side, centered at the bottom of the screen.
 - **PF2e HUD's persistent HUD:** the second row sits right after the first, inside the HUD, styled the way the HUD styles the first row.
-- **Narrow screens:** the second row stays clear of the sidebar, of panels in the right-hand column such as PF2e HUD's combat tracker, and (in Foundry's layout) of the player list. In Foundry's layout both rows first slide over into free space; if that isn't enough, the second row's slots get smaller, down to about half size. On a very narrow screen, or with PF2e HUD's middle placement on a narrow one, there may not be room for both rows even then; showing fewer slots helps.
-- **The floating chat input:** when the sidebar isn't on the Chat tab, Foundry shows a chat input at the bottom right. If the second row reaches under it, the input moves up so both can be used. Turn this off with "Lift the floating chat input".
+- **Narrow screens:** the second row stays clear of the sidebar and (in Foundry's layout) of the player list. In Foundry's layout both rows first slide over into free space; if that isn't enough, the second row's slots get smaller, down to about half size. On a very narrow screen, or with PF2e HUD's middle placement on a narrow one, there may not be room for both rows even then; showing fewer slots helps.
+- **The bottom right:** Foundry's floating chat input (shown when the sidebar isn't on the Chat tab) and panels docked under it, such as PF2e HUD's combat tracker, sit at the bottom of the right-hand column. If the second row reaches under that column, the column moves up so both can be used. With "Lift panels at the bottom right" turned off, the second row shrinks to stop before those panels instead (the chat input may then cover it).
 - When the first row is hidden, so is the second.
 
 ## Other modules

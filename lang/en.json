@@ -10,8 +10,8 @@
         "Hint": "How many slots the second hotbar row shows, from 1 to 10. Kept for this browser."
       },
       "LiftChat": {
-        "Name": "Lift the floating chat input",
-        "Hint": "When the sidebar isn't on the Chat tab, Foundry shows the chat input at the bottom right. If the second row reaches under it, move it up so both can be used."
+        "Name": "Lift panels at the bottom right",
+        "Hint": "When the second row reaches under the right-hand column (Foundry's floating chat input, PF2e HUD's combat tracker and the like), move that column up so both can be used. When off, the second row shrinks to stop before those panels instead, and the chat input may cover it."
       },
       "Accent": {
         "Name": "Second row: accent color",

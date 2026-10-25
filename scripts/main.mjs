@@ -3,6 +3,8 @@ import { ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, accentColor, chatLift, clampPage, c
 const MODULE_ID = "bayards-hotbar-expansion";
 const TEMPLATE = `modules/${MODULE_ID}/templates/expansion.hbs`;
 const DOCK_ID = "bhe-dock";
+/** Foundry's right-hand column: the floating chat input, and docked panels such as PF2e HUD's tracker. */
+const RIGHT_COLUMN = "ui-right-column-1";
 
 /** The second row, once it exists. */
 let bar = null;
@@ -220,9 +222,10 @@ function fit(element) {
   const iface = document.getElementById("interface")?.getBoundingClientRect();
   const sidebar = document.getElementById("sidebar");
   let right = (sidebar?.getClientRects().length ? sidebar.getBoundingClientRect().left : (iface?.right ?? window.innerWidth)) - 8;
-  // Anything else in the right-hand column that comes down into the row's band
-  // (PF2e HUD's combat tracker, say) is an edge too. The chat input is lifted instead.
-  const band = contentRect(element);
+  // With lifting off, panels in the right-hand column that come down into the
+  // row's band (PF2e HUD's combat tracker, say) are an edge too. The chat input
+  // never is: it only floats there when the sidebar isn't on Chat.
+  const band = game.settings.get(MODULE_ID, "liftChat") ? null : contentRect(element);
   if (band) {
     for (const part of document.querySelectorAll("#ui-right-column-1 > *")) {
       if (part.id === "chat-notifications" || !part.getClientRects().length) continue;
@@ -301,24 +304,44 @@ function contentRect(element) {
  * bottom of the right-hand column. If the second row reaches under it, lift the
  * column so its bottom clears the row.
  */
-function liftChat() {
-  const column = document.getElementById("chat-notifications");
+function liftChat(clearOnly = false) {
+  const column = document.getElementById(RIGHT_COLUMN);
   if (!column) return;
-  const applied = column.style.getPropertyValue("--bhe-chat-lift");
-  // Measure where the column sits unlifted (no paint happens in between).
-  column.classList.remove("bhe-lifted");
-  let lift = 0;
-  const element = bar?.element;
-  if (game.settings.get(MODULE_ID, "liftChat") && element?.isConnected && !element.classList.contains("bhe-hidden")) {
-    lift = chatLift(contentRect(element), column.getBoundingClientRect());
-  }
-  if (!lift) {
-    column.style.removeProperty("--bhe-chat-lift");
+  if (clearOnly) {
+    column.classList.remove("bhe-lifted");
     return;
   }
-  const scale = column.offsetWidth ? column.getBoundingClientRect().width / column.offsetWidth : 1;
+  const applied = column.style.getPropertyValue("--bhe-col-lift");
+  // Measure the column unlifted (no paint happens in between).
+  column.classList.remove("bhe-lifted");
+  let lift = 0, pad = 0, scale = 1;
+  const element = bar?.element;
+  const band = element?.isConnected && !element.classList.contains("bhe-hidden") ? contentRect(element) : null;
+  if (game.settings.get(MODULE_ID, "liftChat") && band) {
+    const box = column.getBoundingClientRect();
+    scale = column.offsetWidth ? box.width / column.offsetWidth : 1;
+    pad = parseFloat(getComputedStyle(column).paddingBottom) || 0;
+    // The column and whatever in it reaches down into the row's band; the chat
+    // area is a little wider than the column itself.
+    const parts = [column, ...column.children]
+      .filter(p => p.getClientRects().length)
+      .map(p => p.getBoundingClientRect())
+      .filter(r => r.width > 1 && r.height > 1 && r.bottom > band.top);
+    const area = {
+      left: Math.min(...parts.map(r => r.left)),
+      right: Math.max(...parts.map(r => r.right)),
+      bottom: box.bottom - pad * scale
+    };
+    lift = chatLift(band, area);
+  }
+  if (!lift) {
+    column.style.removeProperty("--bhe-col-lift");
+    column.style.removeProperty("--bhe-col-pad");
+    return;
+  }
   const px = `${Math.ceil(lift / scale)}px`;
-  if (px !== applied) column.style.setProperty("--bhe-chat-lift", px);
+  column.style.setProperty("--bhe-col-pad", `${pad}px`);
+  if (px !== applied) column.style.setProperty("--bhe-col-lift", px);
   column.classList.add("bhe-lifted");
 }
 
@@ -341,6 +364,9 @@ function schedule() {
       if (element.classList.contains("bhe-in-grid")) element.classList.remove("lg", "md", "sm", "min");
       else bar._onResize();
     }
+    // Fit against the column as it sits unlifted (with lifting off its panels
+    // are edges), then lift it clear of the row's final size.
+    liftChat(true);
     fit(element);
     liftChat();
   }, 0);
@@ -396,7 +422,7 @@ Hooks.once("init", () => {
     config: true,
     type: Boolean,
     default: true,
-    onChange: () => liftChat()
+    onChange: () => schedule()
   });
 
   game.settings.register(MODULE_ID, "accent", {
@@ -491,10 +517,11 @@ async function stopBar() {
     for (const child of [...dock.children]) dock.before(child);
     dock.remove();
   }
-  const column = document.getElementById("chat-notifications");
+  const column = document.getElementById(RIGHT_COLUMN);
   if (column) {
     column.classList.remove("bhe-lifted");
-    column.style.removeProperty("--bhe-chat-lift");
+    column.style.removeProperty("--bhe-col-lift");
+    column.style.removeProperty("--bhe-col-pad");
   }
 }
 

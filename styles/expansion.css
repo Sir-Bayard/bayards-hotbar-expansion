@@ -273,8 +273,9 @@
   opacity: 0.45;
 }
 
-/* The floating chat input, lifted clear of the second row. */
+/* The bottom of Foundry's right-hand column (the floating chat input, PF2e HUD's
+   combat tracker), lifted clear of the second row. */
 
-#chat-notifications.bhe-lifted {
-  margin-bottom: var(--bhe-chat-lift, 0);
+#ui-right-column-1.bhe-lifted {
+  padding-bottom: calc(var(--bhe-col-pad, 0px) + var(--bhe-col-lift, 0px));
 }
