@@ -1,3 +1,4 @@
+import { addUserContextOption, openHotbarEditor } from "./editor.mjs";
 import { ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, accentColor, chatLift, clampPage, clampSlots, clampStrength, fitSlotSize, gridStartAfter, slotFor, textOn } from "./helpers.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
@@ -202,10 +203,10 @@ function clearGrid(element) {
 
 /**
  * Keep the row on screen. It must stop before the sidebar, and in core's layout
- * (both rows centred together) also clear the player list and scene controls.
+ * (both rows centered together) also clear the player list and scene controls.
  * In core's layout both rows first slide over into free space; slots shrink only
  * when that isn't enough. In another module's panel the slots shrink, measuring
- * again each time because a centred panel moves as it narrows.
+ * again each time because a centered panel moves as it narrows.
  * Positions are read in screen pixels; sizes are written in layout pixels.
  */
 function fit(element) {
@@ -528,7 +529,8 @@ async function stopBar() {
 Hooks.once("ready", async () => {
   game.modules.get(MODULE_ID).api = {
     get bar() { return bar; },
-    executeSlot
+    executeSlot,
+    editHotbar: openHotbarEditor
   };
   window.addEventListener("resize", foundry.utils.debounce(schedule, 100));
   if (game.settings.get(MODULE_ID, "enabled")) await startBar();
@@ -555,6 +557,9 @@ Hooks.on("updateUser", (user, changes) => {
   if (user === game.user && "color" in changes) applyAccent();
 });
 Hooks.on("renderSettingsConfig", onRenderSettings);
+
+// The GM's hotbar editor, from the Players list.
+Hooks.on("getUserContextOptions", addUserContextOption);
 
 Hooks.on("collapseSidebar", scheduleSettled);
 Hooks.on("changeSidebarTab", scheduleSettled);

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit hotbar": a window with all five pages of their hotbar. Drop macros (or roll tables, items and other documents) on it, drag to move or swap, click to edit or to make a new macro in an empty slot, right-click to remove from the slot or delete, Shift+right-click to delete. A macro you put on a player's hotbar that they can't see is shared with them (Observer). It replaces the hotbar-editing part of the Macro Grid module.
+
 ## 0.2.0
 
 - **The second row is now off until you turn it on.** After updating, tick "Show the second row" in Configure Settings, under this module, to get it back. Each user (GM or player) decides for themselves, and turning it off puts the hotbar and the chat input back as they were, without a reload.

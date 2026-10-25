@@ -1,6 +1,6 @@
 /* Bayard's Hotbar Expansion: the second hotbar row.
    Core styles its bar through the #hotbar id, so this row carries its own rules,
-   built on core's colour variables so it follows the interface theme. */
+   built on core's color variables so it follows the interface theme. */
 
 #bhe-hotbar {
   --hotbar-size: 60px;
@@ -169,7 +169,7 @@
 
 #bhe-dock {
   /* Take the bottom area's width without adding to it, so a wide pair of rows
-     can't push the sidebar off screen; the rows overflow it, centred. */
+     can't push the sidebar off screen; the rows overflow it, centered. */
   contain: inline-size;
   align-self: stretch;
   display: flex;
@@ -184,7 +184,7 @@
    styled the way PF2e HUD styles the first row. */
 
 #bhe-hotbar.bhe-in-grid {
-  /* Add no width to the panel (a centred panel would otherwise grow and push
+  /* Add no width to the panel (a centered panel would otherwise grow and push
      the sidebar off screen); the row overflows its grid column to the right. */
   contain: inline-size;
   margin: 0 0 0 5px;
@@ -278,4 +278,115 @@
 
 #ui-right-column-1.bhe-lifted {
   padding-bottom: calc(var(--bhe-col-pad, 0px) + var(--bhe-col-lift, 0px));
+}
+
+/* The GM's hotbar editor: one user's five pages of ten. */
+
+.bhe-editor .window-content {
+  padding: 8px 12px 12px;
+}
+
+.bhe-editor .bhe-editor-body {
+  width: max-content;
+}
+
+/* Wrap the help text to the grid's width instead of widening the window. */
+.bhe-editor .bhe-editor-help {
+  width: 0;
+  min-width: 100%;
+  margin: 0 0 8px;
+  font-size: var(--font-size-12);
+  color: var(--color-text-subtle, var(--color-text-secondary));
+}
+
+.bhe-editor .bhe-editor-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bhe-editor .bhe-editor-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bhe-editor .bhe-editor-page-number {
+  flex: 0 0 18px;
+  text-align: center;
+  font-weight: bold;
+  color: var(--color-text-subtle, var(--color-text-secondary));
+}
+
+.bhe-editor .bhe-editor-slots {
+  display: flex;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bhe-editor .slot {
+  position: relative;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--color-border, rgba(255, 255, 255, 0.15));
+  border-radius: 8px;
+  background: var(--color-cool-5-90, rgba(11, 10, 19, 0.9));
+  cursor: var(--cursor-pointer);
+}
+
+.bhe-editor .slot.open {
+  border-style: dashed;
+}
+
+/* A macro the player can't run: a red border and an eye-slash mark. */
+.bhe-editor .slot.hidden-from-user {
+  border-color: var(--color-level-error, #c23b22);
+}
+
+.bhe-editor .slot .bhe-hidden-mark {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  padding: 2px;
+  font-size: var(--font-size-11);
+  color: var(--color-light-1, #f0f0e0);
+  background: var(--color-level-error, #c23b22);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.bhe-editor .slot:hover,
+.bhe-editor .slot:focus-visible {
+  border-color: var(--color-warm-1);
+  outline: none;
+}
+
+.bhe-editor .slot.drop-target {
+  background: var(--color-cool-4);
+  border-color: var(--color-warm-2);
+}
+
+.bhe-editor .slot .slot-icon {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.bhe-editor .slot .key {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  line-height: 16px;
+  font-size: var(--font-size-11);
+  text-align: center;
+  background: var(--color-cool-5, #0b0a13);
+  color: var(--color-light-1, #f0f0e0);
+  border-radius: 6px 0 6px;
+  pointer-events: none;
 }

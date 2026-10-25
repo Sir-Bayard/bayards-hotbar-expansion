@@ -47,6 +47,20 @@
       "Slot10": "Second row: slot 10"
     },
     "NextPage": "Next page",
-    "PreviousPage": "Previous page"
+    "PreviousPage": "Previous page",
+    "Editor": {
+      "Menu": "Edit hotbar",
+      "Title": "Hotbar: {name}",
+      "Help": "Drop macros, roll tables, items or other documents on a slot; drag to move or swap. Click a macro to edit it, or an empty slot to make a new one. Right-click for more; Shift+right-click deletes the macro.",
+      "Page": "Page",
+      "Empty": "Empty slot",
+      "Remove": "Remove from slot",
+      "Shared": "{macro} is now shared with {name} (Observer), so they can see and run it.",
+      "GMOnly": "Only a GM can edit other users' hotbars.",
+      "Position": "Page {page}, slot {slot}",
+      "Hidden": "the player can't run this",
+      "Unsupported": "That can't be put on another user's hotbar yet (a PF2e action or strike, say). Drop the item or a macro instead.",
+      "TargetHidden": "{name} can't open {document}, so this macro won't work for them until you share it."
+    }
   }
 }

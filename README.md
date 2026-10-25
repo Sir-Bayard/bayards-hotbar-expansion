@@ -1,6 +1,6 @@
 # Bayard's Hotbar Expansion
 
-A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys, a slot count you choose and an optional accent color. It works with Foundry's own layout and with PF2e HUD's persistent HUD.
+A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys, a slot count you choose and an optional accent color. It works with Foundry's own layout and with PF2e HUD's persistent HUD. For the GM, it also opens any user's whole hotbar for editing.
 
 ## What it looks like
 
@@ -19,6 +19,10 @@ A second hotbar row beside the first. It shows any of the five hotbar pages, wit
 ![Accent colors](docs/images/accents.png)
 
 **Accent colors.** The five presets and a custom color; your own player color is the other choice.
+
+![The GM's hotbar editor](docs/images/editor.png)
+
+**The GM's hotbar editor.** A player's five pages at once. The red border marks a macro the player can't run.
 
 ## Install
 
@@ -54,6 +58,19 @@ To tell the rows apart at a glance, give the second row an accent color (setting
 - **Narrow screens:** the second row stays clear of the sidebar and (in Foundry's layout) of the player list. In Foundry's layout both rows first slide over into free space; if that isn't enough, the second row's slots get smaller, down to about half size. On a very narrow screen, or with PF2e HUD's middle placement on a narrow one, there may not be room for both rows even then; showing fewer slots helps.
 - **The bottom right:** Foundry's floating chat input (shown when the sidebar isn't on the Chat tab) and panels docked under it, such as PF2e HUD's combat tracker, sit at the bottom of the right-hand column. If the second row reaches under that column, the column moves up so both can be used. With "Lift panels at the bottom right" turned off, the second row shrinks to stop before those panels instead (the chat input may then cover it).
 - When the first row is hidden, so is the second.
+
+## For the GM: edit a player's hotbar
+
+Right-click a user in the Players list (bottom left) and choose **Edit hotbar**. A window shows all five pages of that user's hotbar, ten slots each.
+
+- **Add:** drop a macro on a slot, from the Macros sidebar or a compendium (compendium macros are imported into the world). Roll tables become a "draw" macro, and anything else (an item, an actor, a journal entry) becomes a macro that opens its sheet, as on Foundry's own hotbar.
+- **Move:** drag a macro to another slot or page. Dropping it on a filled slot swaps the two.
+- **Edit:** click a macro to open it. Click an empty slot to make a new macro there (close it without giving it a name or command and it's removed again).
+- **Remove or delete:** right-click a macro for Edit, Remove from slot (the macro stays in the world) and Delete. Shift+right-click deletes it straight away (Foundry still asks to confirm).
+- **Sharing:** a player can run a macro they have at least Limited permission on (Limited hides its command from them). When you put a macro on a player's hotbar that they can't run, it is shared with them as Observer, and a note says so. A macro already on their hotbar that they can't run has a red border and an eye-slash mark. A macro made from an item or journal entry still needs the player to be able to open that document; you're warned when they can't.
+- It updates as the player changes their own hotbar.
+
+Only a GM can open it. It replaces the hotbar-editing part of the Macro Grid module.
 
 ## Other modules
 

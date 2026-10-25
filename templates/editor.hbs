@@ -1,0 +1,21 @@
+<div class="bhe-editor-body">
+  <p class="bhe-editor-help">{{localize "BHE.Editor.Help"}}</p>
+  <div class="bhe-editor-grid">
+    {{#each pages}}
+    <div class="bhe-editor-page" data-page="{{page}}">
+      <span class="bhe-editor-page-number" data-tooltip="BHE.Editor.Page">{{page}}</span>
+      <ol class="bhe-editor-slots">
+        {{#each slots}}
+        <li class="slot {{cssClass}}{{#if hidden}} hidden-from-user{{/if}}" data-action="slot" data-slot="{{slot}}"
+            role="button" tabindex="0" aria-label="{{label}}"
+            {{#if name}}data-tooltip-text="{{tooltip}}" draggable="true"{{/if}}>
+          {{#if img}}<img class="slot-icon" src="{{img}}" alt="">{{/if}}
+          <span class="key">{{key}}</span>
+          {{#if hidden}}<i class="bhe-hidden-mark fa-solid fa-eye-slash" aria-hidden="true"></i>{{/if}}
+        </li>
+        {{/each}}
+      </ol>
+    </div>
+    {{/each}}
+  </div>
+</div>
