@@ -49,18 +49,24 @@
     "NextPage": "Next page",
     "PreviousPage": "Previous page",
     "Editor": {
-      "Menu": "Edit hotbar",
+      "Menu": "Edit Hotbar",
       "Title": "Hotbar: {name}",
-      "Help": "Drop macros, roll tables, items or other documents on a slot; drag to move or swap. Click a macro to edit it, or an empty slot to make a new one. Right-click for more; Shift+right-click deletes the macro.",
+      "Help": "Drop macros, roll tables, items, strikes, actions or other documents on a slot; drag to move or swap. Click a macro to edit it, or an empty slot to make a new one. Right-click for more; Shift+right-click deletes the macro.",
+      "PageLabel": "Page {page}",
       "Page": "Page",
       "Empty": "Empty slot",
-      "Remove": "Remove from slot",
+      "Remove": "Remove from Slot",
       "Shared": "{macro} is now shared with {name} (Observer), so they can see and run it.",
       "GMOnly": "Only a GM can edit other users' hotbars.",
       "Position": "Page {page}, slot {slot}",
       "Hidden": "the player can't run this",
-      "Unsupported": "That can't be put on another user's hotbar yet (a PF2e action or strike, say). Drop the item or a macro instead.",
-      "TargetHidden": "{name} can't open {document}, so this macro won't work for them until you share it."
+      "Unsupported": "That can't be put on a hotbar from here. Drop a macro, an item or another document instead.",
+      "TargetHidden": "{name} can't open {document}, so this macro won't work for them until you share it.",
+      "MacroDirectory": "Macro Directory",
+      "User": "Whose hotbar",
+      "GMUser": "{name} (GM)",
+      "Failed": "That didn't work. The console (F12) has the details.",
+      "DropFailed": "That drop couldn't be put on the hotbar. The console (F12) has the details."
     }
   }
 }

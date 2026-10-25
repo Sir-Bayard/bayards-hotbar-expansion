@@ -390,3 +390,29 @@
   border-radius: 6px 0 6px;
   pointer-events: none;
 }
+
+/* The title bar's user picker replaces the title text (kept for screen readers). */
+.bhe-editor .window-header .window-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Only as wide as the names need, so the rest of the bar still drags the window. */
+.bhe-editor .window-header .bhe-editor-user {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 60%;
+  min-width: 0;
+  height: 26px;
+  margin: 0 4px 0 0;
+  font-size: var(--font-size-14);
+  font-weight: bold;
+}
+
+.bhe-editor .window-header .bhe-editor-user + * {
+  margin-left: auto;
+}

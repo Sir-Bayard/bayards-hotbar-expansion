@@ -3,18 +3,18 @@
   <div class="bhe-editor-grid">
     {{#each pages}}
     <div class="bhe-editor-page" data-page="{{page}}">
-      <span class="bhe-editor-page-number" data-tooltip="BHE.Editor.Page">{{page}}</span>
-      <ol class="bhe-editor-slots">
+      <span class="bhe-editor-page-number" data-tooltip="BHE.Editor.Page" aria-hidden="true">{{page}}</span>
+      <div class="bhe-editor-slots" role="group" aria-label="{{localize "BHE.Editor.PageLabel" page=page}}">
         {{#each slots}}
-        <li class="slot {{cssClass}}{{#if hidden}} hidden-from-user{{/if}}" data-action="slot" data-slot="{{slot}}"
-            role="button" tabindex="0" aria-label="{{label}}"
-            {{#if name}}data-tooltip-text="{{tooltip}}" draggable="true"{{/if}}>
+        <div class="slot {{cssClass}}{{#if hidden}} hidden-from-user{{/if}}" data-action="slot" data-slot="{{slot}}"
+             role="button" tabindex="0" aria-label="{{label}}"
+             {{#if name}}data-tooltip-text="{{tooltip}}" draggable="true"{{/if}}>
           {{#if img}}<img class="slot-icon" src="{{img}}" alt="">{{/if}}
-          <span class="key">{{key}}</span>
+          <span class="key" aria-hidden="true">{{key}}</span>
           {{#if hidden}}<i class="bhe-hidden-mark fa-solid fa-eye-slash" aria-hidden="true"></i>{{/if}}
-        </li>
+        </div>
         {{/each}}
-      </ol>
+      </div>
     </div>
     {{/each}}
   </div>

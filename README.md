@@ -61,20 +61,22 @@ To tell the rows apart at a glance, give the second row an accent color (setting
 
 ## For the GM: edit a player's hotbar
 
-Right-click a user in the Players list (bottom left) and choose **Edit hotbar**. A window shows all five pages of that user's hotbar, ten slots each.
+Right-click a user in the Players list (bottom left) and choose **Edit Hotbar**. A window shows all five pages of that user's hotbar, ten slots each. The user's name in the title bar is a menu: pick another user to switch the window to their hotbar. The code button beside it opens the Macro Directory, to drag macros from.
 
-- **Add:** drop a macro on a slot, from the Macros sidebar or a compendium (compendium macros are imported into the world). Roll tables become a "draw" macro, and anything else (an item, an actor, a journal entry) becomes a macro that opens its sheet, as on Foundry's own hotbar.
+- **Add:** drop a macro on a slot, from the Macro Directory or a compendium (compendium macros are imported into the world). Everything else becomes a macro the way it would on Foundry's own hotbar: in Pathfinder 2e, a strike or action from a character sheet becomes a strike or action macro, an item an item macro, and a condition or effect a toggle; roll tables become a "draw" macro, and other documents a macro that opens their sheet.
 - **Move:** drag a macro to another slot or page. Dropping it on a filled slot swaps the two.
 - **Edit:** click a macro to open it. Click an empty slot to make a new macro there (close it without giving it a name or command and it's removed again).
-- **Remove or delete:** right-click a macro for Edit, Remove from slot (the macro stays in the world) and Delete. Shift+right-click deletes it straight away (Foundry still asks to confirm).
-- **Sharing:** a player can run a macro they have at least Limited permission on (Limited hides its command from them). When you put a macro on a player's hotbar that they can't run, it is shared with them as Observer, and a note says so. A macro already on their hotbar that they can't run has a red border and an eye-slash mark. A macro made from an item or journal entry still needs the player to be able to open that document; you're warned when they can't.
+- **Remove or delete:** right-click a macro for Edit, Remove from Slot (the macro stays in the world) and Delete. Shift+right-click deletes it straight away (Foundry still asks to confirm).
+- **Sharing:** a player can run a macro they have at least Limited permission on (Limited hides its command from them). When you put a macro on a player's hotbar that they can't run, it is shared with them as Observer, and a note says so. A macro already on their hotbar that they can't run has a red border and an eye-slash mark. A macro made from an item, a strike or a journal entry still needs the player to be able to open that item, character or entry; you're warned when they can't.
 - It updates as the player changes their own hotbar.
 
-Only a GM can open it. It replaces the hotbar-editing part of the Macro Grid module.
+Only a GM can open it.
 
 ## Other modules
 
 The second row is built on Foundry's own hotbar, so modules that react when a hotbar is drawn (the `renderHotbar` hook) see it too. Interface themes use that to style both rows alike.
+
+The GM's editor hands drops it doesn't handle itself to the same `hotbarDrop` hook Foundry's hotbar uses, so the game system can turn them into its own macros (Pathfinder 2e does). A module whose drop handler writes to the GM's own hotbar directly, instead of through Foundry's `assignHotbarMacro`, won't place its macro on the player's hotbar from the editor.
 
 ## Macros
 

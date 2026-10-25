@@ -2,7 +2,7 @@
 
 ## 0.3.0
 
-- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit hotbar": a window with all five pages of their hotbar. Drop macros (or roll tables, items and other documents) on it, drag to move or swap, click to edit or to make a new macro in an empty slot, right-click to remove from the slot or delete, Shift+right-click to delete. A macro you put on a player's hotbar that they can't run is shared with them (Observer); one they already have Limited permission on is left alone. You're warned when a macro made from an item or journal entry points at something the player can't open. PF2e actions and strikes can't be dropped on another user's hotbar yet. It replaces the hotbar-editing part of the Macro Grid module.
+- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit Hotbar": a window with all five pages of their hotbar. Drop macros on it, or anything Foundry's hotbar takes (in PF2e: strikes, actions, items, conditions and effects, built the way PF2e builds them), drag to move or swap, click to edit or to make a new macro in an empty slot, right-click to remove from the slot or delete, Shift+right-click to delete. A macro you put on a player's hotbar that they can't run is shared with them (Observer); one they already have Limited permission on is left alone. You're warned when a macro made from an item, a strike or a journal entry points at something the player can't open. Pick another user from the name in the title bar to switch the window to their hotbar; a title-bar button opens the Macro Directory.
 
 ## 0.2.0
 

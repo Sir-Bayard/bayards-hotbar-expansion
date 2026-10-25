@@ -1,4 +1,4 @@
-import { addUserContextOption, openHotbarEditor } from "./editor.mjs";
+import { addUserContextOption, openHotbarEditor, watchUsers } from "./editor.mjs";
 import { ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, accentColor, chatLift, clampPage, clampSlots, clampStrength, fitSlotSize, gridStartAfter, slotFor, textOn } from "./helpers.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
@@ -560,6 +560,7 @@ Hooks.on("renderSettingsConfig", onRenderSettings);
 
 // The GM's hotbar editor, from the Players list.
 Hooks.on("getUserContextOptions", addUserContextOption);
+watchUsers();
 
 Hooks.on("collapseSidebar", scheduleSettled);
 Hooks.on("changeSidebarTab", scheduleSettled);
