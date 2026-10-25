@@ -2,6 +2,24 @@
 
 A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys, a slot count you choose and an optional accent color. It works with Foundry's own layout and with PF2e HUD's persistent HUD.
 
+## What it looks like
+
+![Inside PF2e HUD](docs/images/hud.png)
+
+**Inside PF2e HUD.** The second row, here on page 2 with the Violet accent, sits right after the first, styled the way the HUD styles the hotbar.
+
+![Foundry's own layout](docs/images/core.png)
+
+**Foundry's own layout.** Both rows side by side, with no accent: the second row looks like the first, with its own page selector.
+
+![The settings](docs/images/settings.png)
+
+**The settings.** Each user turns the row on for themselves. The accent color shows on the row while you pick it (Crimson here, not yet saved).
+
+![Accent colors](docs/images/accents.png)
+
+**Accent colors.** The five presets and a custom color; your own player color is the other choice.
+
 ## Install
 
 In Foundry, go to **Add-on Modules**, then **Install Module**, and paste this into **Manifest URL**:

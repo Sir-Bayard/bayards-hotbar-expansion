@@ -172,8 +172,11 @@ function place(element = bar?.element) {
     }
     if (element.previousElementSibling !== hotbar) hotbar.after(element);
     clearGrid(element);
+    // Sit on the same line as the first row, whatever bottom margin it has been given.
+    element.style.marginBottom = getComputedStyle(hotbar).marginBottom;
     return;
   }
+  element.style.removeProperty("margin-bottom");
 
   if (element.previousElementSibling !== hotbar) hotbar.after(element);
   if (dock && !dock.children.length) dock.remove();
@@ -216,7 +219,17 @@ function fit(element) {
   const rowRight = () => contentRect(element)?.right ?? 0;
   const iface = document.getElementById("interface")?.getBoundingClientRect();
   const sidebar = document.getElementById("sidebar");
-  const right = (sidebar?.getClientRects().length ? sidebar.getBoundingClientRect().left : (iface?.right ?? window.innerWidth)) - 8;
+  let right = (sidebar?.getClientRects().length ? sidebar.getBoundingClientRect().left : (iface?.right ?? window.innerWidth)) - 8;
+  // Anything else in the right-hand column that comes down into the row's band
+  // (PF2e HUD's combat tracker, say) is an edge too. The chat input is lifted instead.
+  const band = contentRect(element);
+  if (band) {
+    for (const part of document.querySelectorAll("#ui-right-column-1 > *")) {
+      if (part.id === "chat-notifications" || !part.getClientRects().length) continue;
+      const r = part.getBoundingClientRect();
+      if (r.width > 1 && r.height > 1 && r.bottom > band.top && r.top < band.bottom) right = Math.min(right, r.left - 8);
+    }
+  }
   const slotWidth = () => element.querySelector(".slot")?.getBoundingClientRect().width ?? 0;
   // Slots on one line (core's narrow layout stacks them five by two).
   const perLine = () => {
