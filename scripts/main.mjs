@@ -73,42 +73,61 @@ function userColor() {
   return c?.css ?? (c != null ? String(c) : null);
 }
 
-/** Tint the second row's slots, number badges and page selector, or clear it. */
-function applyAccent() {
+/**
+ * Tint the second row's slots, number badges and page selector, or clear it.
+ * `preview` (from the open settings window) stands in for the stored values.
+ */
+function applyAccent(preview = null) {
   const element = bar?.element;
   if (!element) return;
-  const color = accentColor(
-    game.settings.get(MODULE_ID, "accent"),
-    String(game.settings.get(MODULE_ID, "accentCustom") ?? ""),
-    userColor()
-  );
+  const get = key => (preview && key in preview ? preview[key] : game.settings.get(MODULE_ID, key));
+  const color = accentColor(get("accent"), String(get("accentCustom") ?? ""), userColor());
   element.classList.toggle("bhe-accented", !!color);
   if (!color) {
     for (const v of ["--bhe-accent", "--bhe-accent-text", "--bhe-accent-wash"]) element.style.removeProperty(v);
   } else {
     element.style.setProperty("--bhe-accent", color);
     element.style.setProperty("--bhe-accent-text", textOn(color));
-    element.style.setProperty("--bhe-accent-wash", `${clampStrength(game.settings.get(MODULE_ID, "accentStrength"))}%`);
+    element.style.setProperty("--bhe-accent-wash", `${clampStrength(get("accentStrength"))}%`);
   }
   // The page selector's border can change the row's width.
   schedule();
 }
 
-/** In the settings window, grey out the custom color and strength when they don't apply. */
+/**
+ * In the settings window: show the accent on the row as it is changed, before
+ * saving (closing without saving puts the stored one back), and grey out the
+ * custom color and strength when they don't apply.
+ */
 function onRenderSettings(app, html) {
   const root = html instanceof HTMLElement ? html : html?.[0];
-  const select = root?.querySelector(`select[name="${MODULE_ID}.accent"]`);
-  if (!select) return;
-  const group = name => root.querySelector(`[name="${MODULE_ID}.${name}"]`)?.closest(".form-group");
-  const sync = () => {
-    const custom = group("accentCustom"), strength = group("accentStrength");
-    if (custom) custom.classList.toggle("bhe-setting-off", select.value !== "custom");
-    if (strength) strength.classList.toggle("bhe-setting-off", select.value === "none");
+  if (!root?.querySelector(`[name="${MODULE_ID}.accent"]`)) return;
+  // The window's element survives its re-renders; bind once per window.
+  if (root.dataset.bheBound) return syncSettings(root);
+  root.dataset.bheBound = "1";
+  const live = () => setTimeout(() => syncSettings(root), 0);
+  for (const type of ["input", "change", "click"]) root.addEventListener(type, live);
+  const onClose = closed => {
+    if (closed !== app) return;
+    Hooks.off("closeSettingsConfig", hook);
+    applyAccent();
   };
-  // Any change in the form (Reset Defaults sets the select without a change event on it).
-  root.addEventListener("change", sync);
-  root.addEventListener("click", () => setTimeout(sync, 0));
-  sync();
+  const hook = Hooks.on("closeSettingsConfig", onClose);
+  syncSettings(root);
+}
+
+/** Read the accent fields from the settings form, preview them and grey out the unused ones. */
+function syncSettings(root) {
+  const field = key => root.querySelector(`[name="${MODULE_ID}.${key}"]`);
+  const select = field("accent");
+  if (!select) return;
+  const custom = field("accentCustom"), strength = field("accentStrength");
+  custom?.closest(".form-group")?.classList.toggle("bhe-setting-off", select.value !== "custom");
+  strength?.closest(".form-group")?.classList.toggle("bhe-setting-off", select.value === "none");
+  const preview = { accent: select.value };
+  if (custom?.value) preview.accentCustom = custom.value;
+  if (strength && strength.value !== "" && strength.value != null) preview.accentStrength = strength.value;
+  applyAccent(preview);
 }
 
 function shownSlots() {

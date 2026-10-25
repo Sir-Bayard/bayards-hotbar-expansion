@@ -25,7 +25,7 @@ Foundry keeps 50 hotbar slots per user, on five pages of ten, and shows one page
 
 ## Accent color
 
-To tell the rows apart at a glance, give the second row an accent color (setting "Second row: accent color"): Crimson, Violet, Blue, Green, Black, your player color, or a custom color you pick. It colors the slot borders, fills the number badges (with black or white numbers, whichever reads better), outlines the page selector and tints the empty slots (a macro's icon covers its slot). "Second row: accent strength" sets how strong the tint and borders are, from 10% to 60%. Each user picks their own, and it follows them to any computer. The default is none, which looks like the first row.
+To tell the rows apart at a glance, give the second row an accent color (setting "Second row: accent color"): Crimson, Violet, Blue, Green, Black, your player color, or a custom color you pick. It colors the slot borders, fills the number badges (with black or white numbers, whichever reads better), outlines the page selector and tints the empty slots (a macro's icon covers its slot). "Second row: accent strength" sets how strong the tint and borders are, from 10% to 60%. While the settings window is open, the second row shows the color and strength as you change them; close the window without saving and it goes back. Each user picks their own, and it follows them to any computer. The default is none, which looks like the first row.
 
 ## Where it sits
 
