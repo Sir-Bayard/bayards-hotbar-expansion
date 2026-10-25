@@ -54,6 +54,13 @@ function defineExpansionBar() {
       schedule();
     }
 
+    /** Leave core's list of macro apps when the row is switched off. */
+    _onClose(options) {
+      super._onClose?.(options);
+      const i = game.macros.apps.indexOf(this);
+      if (i >= 0) game.macros.apps.splice(i, 1);
+    }
+
     /** Remember the page this row shows. */
     async changePage(page) {
       await super.changePage(page);
@@ -348,6 +355,16 @@ function executeSlot(n) {
 /* -------------------------------------------- */
 
 Hooks.once("init", () => {
+  game.settings.register(MODULE_ID, "enabled", {
+    name: "BHE.Settings.Enabled.Name",
+    hint: "BHE.Settings.Enabled.Hint",
+    scope: "user",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: value => (value ? startBar() : stopBar())
+  });
+
   game.settings.register(MODULE_ID, "slots", {
     name: "BHE.Settings.Slots.Name",
     hint: "BHE.Settings.Slots.Hint",
@@ -424,19 +441,57 @@ Hooks.once("init", () => {
   }
 });
 
-Hooks.once("ready", async () => {
-  const ExpansionHotbar = defineExpansionBar();
-  bar = new ExpansionHotbar();
+/* -------------------------------------------- */
+/*  Switching the row on and off                */
+/* -------------------------------------------- */
+
+let ExpansionHotbar = null;
+let observer = null;
+
+/** Show the second row (the user's "Show the second row" setting). */
+async function startBar() {
+  if (bar?.rendered) return;
+  ExpansionHotbar ??= defineExpansionBar();
+  bar ??= new ExpansionHotbar();
   // changePage only re-renders a bar that is already on screen.
   await bar.changePage(clampPage(game.settings.get(MODULE_ID, "page")));
   await bar.render({ force: true });
-  game.modules.get(MODULE_ID).api = { bar, executeSlot };
-
-  window.addEventListener("resize", foundry.utils.debounce(schedule, 100));
   // #hotbar shown, hidden or resized without any app rendering.
   const hotbar = document.getElementById("hotbar");
-  if (hotbar && typeof ResizeObserver === "function") new ResizeObserver(() => schedule()).observe(hotbar);
+  if (hotbar && typeof ResizeObserver === "function") {
+    observer = new ResizeObserver(() => schedule());
+    observer.observe(hotbar);
+  }
   schedule();
+}
+
+/** Take the second row away and put everything it moved back. */
+async function stopBar() {
+  observer?.disconnect();
+  observer = null;
+  const old = bar;
+  bar = null;
+  if (old?.rendered) await old.close({ force: true, animate: false });
+  old?.element?.remove();
+  const dock = document.getElementById(DOCK_ID);
+  if (dock) {
+    for (const child of [...dock.children]) dock.before(child);
+    dock.remove();
+  }
+  const column = document.getElementById("chat-notifications");
+  if (column) {
+    column.classList.remove("bhe-lifted");
+    column.style.removeProperty("--bhe-chat-lift");
+  }
+}
+
+Hooks.once("ready", async () => {
+  game.modules.get(MODULE_ID).api = {
+    get bar() { return bar; },
+    executeSlot
+  };
+  window.addEventListener("resize", foundry.utils.debounce(schedule, 100));
+  if (game.settings.get(MODULE_ID, "enabled")) await startBar();
 });
 
 // Core's row re-renders when the user's hotbar changes; show the same change here.

@@ -1,6 +1,10 @@
 {
   "BHE": {
     "Settings": {
+      "Enabled": {
+        "Name": "Show the second row",
+        "Hint": "Adds a second hotbar row beside the first. Off until you turn it on; each user decides for themselves."
+      },
       "Slots": {
         "Name": "Second row: slots shown",
         "Hint": "How many slots the second hotbar row shows, from 1 to 10. Kept for this browser."

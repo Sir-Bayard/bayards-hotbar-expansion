@@ -3,6 +3,7 @@
 ## 0.1.0
 
 - First release: a second hotbar row beside the first, showing any of the five hotbar pages.
+- Off until each user turns it on (setting "Show the second row", per user).
 - Its own page selector (pages 1 to 5, remembered for your user), separate from the first row's.
 - Keys Alt+Shift+1 to Alt+Shift+0 for the second row's slots, changeable in Configure Controls.
 - Setting "Second row: slots shown" (1 to 10, default 10), per browser.

@@ -18,6 +18,8 @@ Requires Foundry VTT 14 (verified on 14.369). It works with any game system.
 
 Foundry keeps 50 hotbar slots per user, on five pages of ten, and shows one page at a time. This module adds a second row that shows another page at the same time.
 
+**Turn it on:** the row is off until you tick "Show the second row" in **Configure Settings**, under this module. Each user (GM or player) decides for themselves, and the choice follows them to any computer. Turning it off puts everything back as it was.
+
 - **It is the same hotbar.** The second row shows one of your five pages, so a macro on page 2 appears there and nowhere new is stored. Click to run, drop macros, items and actions onto it, drag between slots and between the rows, and right-click to edit or remove, just as on the first row. The hotbar lock applies to both.
 - **Its own page.** The arrows beside the second row flip it through pages 1 to 5 without touching the first row. It starts on page 2 and remembers the page you leave it on, for your user on any computer.
 - **Its own keys.** Alt+Shift+1 to Alt+Shift+0 run slots 1 to 10 of the second row. Change them in **Configure Controls**. (Alt+1 to 5 are Foundry's keys for switching the first row's page.)
