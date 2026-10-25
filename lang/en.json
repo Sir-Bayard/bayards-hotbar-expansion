@@ -8,6 +8,26 @@
       "LiftChat": {
         "Name": "Lift the floating chat input",
         "Hint": "When the sidebar isn't on the Chat tab, Foundry shows the chat input at the bottom right. If the second row reaches under it, move it up so both can be used."
+      },
+      "Accent": {
+        "Name": "Second row: accent color",
+        "Hint": "Colors the second row's slot borders, number badges and page selector, and tints its empty slots, so it stands apart from the first row. Each user picks their own.",
+        "None": "None (like the first row)",
+        "Crimson": "Crimson",
+        "Violet": "Violet",
+        "Blue": "Blue",
+        "Green": "Green",
+        "Black": "Black",
+        "Player": "My player color",
+        "Custom": "Custom color (below)"
+      },
+      "AccentCustom": {
+        "Name": "Second row: custom accent color",
+        "Hint": "Used when the accent color is set to Custom."
+      },
+      "AccentStrength": {
+        "Name": "Second row: accent strength",
+        "Hint": "How strong the accent is on the slots (the tint behind empty slots and the slot borders), in percent. The number badges are always solid."
       }
     },
     "Keys": {

@@ -1,6 +1,6 @@
 # Bayard's Hotbar Expansion
 
-A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys and a slot count you choose. It works with Foundry's own layout and with PF2e HUD's persistent HUD.
+A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys, a slot count you choose and an optional accent color. It works with Foundry's own layout and with PF2e HUD's persistent HUD.
 
 ## Install
 
@@ -23,9 +23,13 @@ Foundry keeps 50 hotbar slots per user, on five pages of ten, and shows one page
 - **Its own keys.** Alt+Shift+1 to Alt+Shift+0 run slots 1 to 10 of the second row. Change them in **Configure Controls**. (Alt+1 to 5 are Foundry's keys for switching the first row's page.)
 - **Slot count.** Show 1 to 10 slots (setting "Second row: slots shown", kept per browser, since it depends on the screen). The keys follow: with six slots shown, Alt+Shift+7 does nothing.
 
+## Accent color
+
+To tell the rows apart at a glance, give the second row an accent color (setting "Second row: accent color"): Crimson, Violet, Blue, Green, Black, your player color, or a custom color you pick. It colors the slot borders, fills the number badges (with black or white numbers, whichever reads better), outlines the page selector and tints the empty slots (a macro's icon covers its slot). "Second row: accent strength" sets how strong the tint and borders are, from 10% to 60%. Each user picks their own, and it follows them to any computer. The default is none, which looks like the first row.
+
 ## Where it sits
 
-- **Foundry's layout:** both rows sit side by side, centred at the bottom of the screen.
+- **Foundry's layout:** both rows sit side by side, centered at the bottom of the screen.
 - **PF2e HUD's persistent HUD:** the second row sits right after the first, inside the HUD, styled the way the HUD styles the first row.
 - **Narrow screens:** the second row stays clear of the sidebar (and, in Foundry's layout, the player list). In Foundry's layout both rows first slide over into free space; if that isn't enough, the second row's slots get smaller, down to about half size. On a very narrow screen, or with PF2e HUD's middle placement on a narrow one, there may not be room for both rows even then; showing fewer slots helps.
 - **The floating chat input:** when the sidebar isn't on the Chat tab, Foundry shows a chat input at the bottom right. If the second row reaches under it, the input moves up so both can be used. Turn this off with "Lift the floating chat input".

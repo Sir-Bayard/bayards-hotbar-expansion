@@ -1,7 +1,7 @@
 {
   "id": "bayards-hotbar-expansion",
   "title": "Bayard's Hotbar Expansion",
-  "description": "A second hotbar row beside the first, with its own page selector, keys and slot count. Works with PF2e HUD's persistent HUD.",
+  "description": "A second hotbar row beside the first, with its own page selector, keys, slot count and accent color. Works with PF2e HUD's persistent HUD.",
   "version": "0.1.0",
   "compatibility": {
     "minimum": "14",

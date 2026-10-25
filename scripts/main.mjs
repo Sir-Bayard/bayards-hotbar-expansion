@@ -1,4 +1,4 @@
-import { PAGE_SIZE, chatLift, clampPage, clampSlots, fitSlotSize, gridStartAfter, slotFor } from "./helpers.mjs";
+import { ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, accentColor, chatLift, clampPage, clampSlots, clampStrength, fitSlotSize, gridStartAfter, slotFor, textOn } from "./helpers.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
 const TEMPLATE = `modules/${MODULE_ID}/templates/expansion.hbs`;
@@ -50,6 +50,7 @@ function defineExpansionBar() {
 
     async _onRender(context, options) {
       await super._onRender(context, options);
+      applyAccent();
       schedule();
     }
 
@@ -60,6 +61,54 @@ function defineExpansionBar() {
       if (game.settings.get(MODULE_ID, "page") !== shown) await game.settings.set(MODULE_ID, "page", shown);
     }
   };
+}
+
+/* -------------------------------------------- */
+/*  Accent color                                */
+/* -------------------------------------------- */
+
+/** The user's own color as "#rrggbb" (a Color object in Foundry 14). */
+function userColor() {
+  const c = game.user?.color;
+  return c?.css ?? (c != null ? String(c) : null);
+}
+
+/** Tint the second row's slots, number badges and page selector, or clear it. */
+function applyAccent() {
+  const element = bar?.element;
+  if (!element) return;
+  const color = accentColor(
+    game.settings.get(MODULE_ID, "accent"),
+    String(game.settings.get(MODULE_ID, "accentCustom") ?? ""),
+    userColor()
+  );
+  element.classList.toggle("bhe-accented", !!color);
+  if (!color) {
+    for (const v of ["--bhe-accent", "--bhe-accent-text", "--bhe-accent-wash"]) element.style.removeProperty(v);
+  } else {
+    element.style.setProperty("--bhe-accent", color);
+    element.style.setProperty("--bhe-accent-text", textOn(color));
+    element.style.setProperty("--bhe-accent-wash", `${clampStrength(game.settings.get(MODULE_ID, "accentStrength"))}%`);
+  }
+  // The page selector's border can change the row's width.
+  schedule();
+}
+
+/** In the settings window, grey out the custom color and strength when they don't apply. */
+function onRenderSettings(app, html) {
+  const root = html instanceof HTMLElement ? html : html?.[0];
+  const select = root?.querySelector(`select[name="${MODULE_ID}.accent"]`);
+  if (!select) return;
+  const group = name => root.querySelector(`[name="${MODULE_ID}.${name}"]`)?.closest(".form-group");
+  const sync = () => {
+    const custom = group("accentCustom"), strength = group("accentStrength");
+    if (custom) custom.classList.toggle("bhe-setting-off", select.value !== "custom");
+    if (strength) strength.classList.toggle("bhe-setting-off", select.value === "none");
+  };
+  // Any change in the form (Reset Defaults sets the select without a change event on it).
+  root.addEventListener("change", sync);
+  root.addEventListener("click", () => setTimeout(sync, 0));
+  sync();
 }
 
 function shownSlots() {
@@ -301,6 +350,43 @@ Hooks.once("init", () => {
     onChange: () => liftChat()
   });
 
+  game.settings.register(MODULE_ID, "accent", {
+    name: "BHE.Settings.Accent.Name",
+    hint: "BHE.Settings.Accent.Hint",
+    scope: "user",
+    config: true,
+    type: String,
+    choices: {
+      none: "BHE.Settings.Accent.None",
+      ...Object.fromEntries(Object.keys(ACCENTS).map(k => [k, `BHE.Settings.Accent.${k[0].toUpperCase()}${k.slice(1)}`])),
+      player: "BHE.Settings.Accent.Player",
+      custom: "BHE.Settings.Accent.Custom"
+    },
+    default: "none",
+    onChange: () => applyAccent()
+  });
+
+  game.settings.register(MODULE_ID, "accentCustom", {
+    name: "BHE.Settings.AccentCustom.Name",
+    hint: "BHE.Settings.AccentCustom.Hint",
+    scope: "user",
+    config: true,
+    type: new foundry.data.fields.ColorField({ nullable: false, initial: CUSTOM_DEFAULT }),
+    default: CUSTOM_DEFAULT,
+    onChange: () => applyAccent()
+  });
+
+  game.settings.register(MODULE_ID, "accentStrength", {
+    name: "BHE.Settings.AccentStrength.Name",
+    hint: "BHE.Settings.AccentStrength.Hint",
+    scope: "user",
+    config: true,
+    type: Number,
+    range: { min: 10, max: 60, step: 5 },
+    default: 30,
+    onChange: () => applyAccent()
+  });
+
   game.settings.register(MODULE_ID, "page", {
     scope: "user",
     config: false,
@@ -349,6 +435,12 @@ function onOtherApp(app) {
 }
 Hooks.on("renderApplicationV2", onOtherApp);
 Hooks.on("closeApplicationV2", onOtherApp);
+
+// The user's own color can change while "Player color" is chosen.
+Hooks.on("updateUser", (user, changes) => {
+  if (user === game.user && "color" in changes) applyAccent();
+});
+Hooks.on("renderSettingsConfig", onRenderSettings);
 
 Hooks.on("collapseSidebar", scheduleSettled);
 Hooks.on("changeSidebarTab", scheduleSettled);

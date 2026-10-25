@@ -211,6 +211,11 @@
   height: var(--bhe-fit-size, var(--row-2fr));
 }
 
+#pf2e-hud-persistent #bhe-hotbar .slot.drop-target {
+  background: var(--color-cool-4);
+  border-color: var(--color-warm-2);
+}
+
 #pf2e-hud-persistent #bhe-hotbar .bhe-page-controls {
   --button-size: 1.4em;
   height: 100%;
@@ -226,6 +231,46 @@
 #pf2e-hud-persistent #bhe-hotbar .bhe-page-control {
   font-size: var(--hud-font-size);
   color: var(--color);
+}
+
+/* Accent color (setting): a wash over each slot's own background, under its
+   icon (an inset shadow paints above the background and below the content),
+   a tinted border that still shows around a full slot's icon, solid number
+   badges, and the page selector's border. */
+
+#bhe-hotbar.bhe-accented .slot {
+  box-shadow: inset 0 0 0 200px color-mix(in srgb, var(--bhe-accent) var(--bhe-accent-wash, 30%), transparent);
+  border-color: color-mix(in srgb, var(--bhe-accent) calc(var(--bhe-accent-wash, 30%) + 30%), transparent);
+}
+
+#bhe-hotbar.bhe-accented .slot:hover {
+  border-color: var(--color-warm-1);
+}
+
+/* The drop-target highlight replaces the wash while dragging. */
+#bhe-hotbar.bhe-accented .slot.drop-target {
+  box-shadow: none;
+  border-color: var(--color-warm-2);
+}
+
+#bhe-hotbar.bhe-accented .slot .key,
+#bhe-hotbar.bhe-accented .slot.full .key {
+  background: var(--bhe-accent);
+  color: var(--bhe-accent-text, var(--color-light-1));
+}
+
+#bhe-hotbar.bhe-accented .bhe-page-controls {
+  border: 1px solid var(--bhe-accent);
+  border-radius: var(--border-radius, 4px);
+}
+
+#pf2e-hud-persistent #bhe-hotbar.bhe-accented .bhe-page-controls {
+  border-color: var(--bhe-accent);
+}
+
+/* Settings window: greyed out when the accent choice makes them unused. */
+.bhe-setting-off {
+  opacity: 0.45;
 }
 
 /* The floating chat input, lifted clear of the second row. */

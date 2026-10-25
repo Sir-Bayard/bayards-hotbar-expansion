@@ -73,3 +73,54 @@ export function fitSlotSize(size, count, over, scale = 1, min = MIN_SLOT) {
   const next = Math.max(min, Math.floor((size - over / count) / scale));
   return next < natural ? next : null;
 }
+
+/** Preset accent colors for the second row. */
+export const ACCENTS = {
+  crimson: "#b23a48",
+  violet: "#7b5ea7",
+  blue: "#3a6ea5",
+  green: "#3f8f4f",
+  black: "#111111"
+};
+
+/** A "#rrggbb" color, or null. Accepts "#rgb" too. */
+export function normalizeHex(value) {
+  const v = String(value ?? "").trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(v)) return v;
+  if (/^#[0-9a-f]{3}$/.test(v)) return `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`;
+  return null;
+}
+
+/**
+ * The accent color for a choice: a preset, the user's own color ("player"), a
+ * custom color ("custom"), or null for none (or anything unusable).
+ */
+export function accentColor(choice, custom, userColor) {
+  if (Object.hasOwn(ACCENTS, String(choice))) return ACCENTS[choice];
+  if (choice === "player") return normalizeHex(userColor);
+  if (choice === "custom") return normalizeHex(custom) ?? CUSTOM_DEFAULT;
+  return null;
+}
+
+/** The custom accent color's default, also used when the stored one is unusable. */
+export const CUSTOM_DEFAULT = "#c9a227";
+
+/** Black or white text, whichever contrasts more with the background color. */
+export function textOn(hex) {
+  const h = normalizeHex(hex);
+  if (!h) return "#ffffff";
+  const lin = c => {
+    const s = parseInt(h.slice(c, c + 2), 16) / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  const l = 0.2126 * lin(1) + 0.7152 * lin(3) + 0.0722 * lin(5);
+  // Contrast with black is (l + 0.05) / 0.05, with white 1.05 / (l + 0.05).
+  return (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? "#000000" : "#ffffff";
+}
+
+/** Clamp the wash strength to a whole percent from 10 to 60 (fallback 30). */
+export function clampStrength(value, fallback = 30) {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(60, Math.max(10, n));
+}
