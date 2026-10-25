@@ -1,0 +1,28 @@
+{
+  "BHE": {
+    "Settings": {
+      "Slots": {
+        "Name": "Second row: slots shown",
+        "Hint": "How many slots the second hotbar row shows, from 1 to 10. Kept for this browser."
+      },
+      "LiftChat": {
+        "Name": "Lift the floating chat input",
+        "Hint": "When the sidebar isn't on the Chat tab, Foundry shows the chat input at the bottom right. If the second row reaches under it, move it up so both can be used."
+      }
+    },
+    "Keys": {
+      "Slot1": "Second row: slot 1",
+      "Slot2": "Second row: slot 2",
+      "Slot3": "Second row: slot 3",
+      "Slot4": "Second row: slot 4",
+      "Slot5": "Second row: slot 5",
+      "Slot6": "Second row: slot 6",
+      "Slot7": "Second row: slot 7",
+      "Slot8": "Second row: slot 8",
+      "Slot9": "Second row: slot 9",
+      "Slot10": "Second row: slot 10"
+    },
+    "NextPage": "Next page",
+    "PreviousPage": "Previous page"
+  }
+}

@@ -1,0 +1,8 @@
+# Keep LF line endings everywhere, on every computer (Foundry and GitHub expect them)
+* text=auto eol=lf
+
+# Images and archives are binary: never touch their bytes
+*.webp binary
+*.png binary
+*.jpg binary
+*.zip binary

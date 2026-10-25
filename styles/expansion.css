@@ -1,0 +1,235 @@
+/* Bayard's Hotbar Expansion: the second hotbar row.
+   Core styles its bar through the #hotbar id, so this row carries its own rules,
+   built on core's colour variables so it follows the interface theme. */
+
+#bhe-hotbar {
+  --hotbar-size: 60px;
+  --slot-color: var(--color-cool-5-90);
+  --key-bg-color-empty: var(--color-cool-5);
+  --key-bg-color-full: var(--color-cool-5);
+  --key-text-color: var(--color-light-1);
+  --page-control-color: var(--color-cool-5);
+  display: flex;
+  flex: 0 0 auto;
+  width: max-content;
+  height: var(--hotbar-size);
+  margin: 0 0 16px;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.themed.theme-light #bhe-hotbar {
+  --slot-color: rgba(255, 255, 255, 0.6);
+  --key-bg-color-empty: transparent;
+  --key-bg-color-full: rgba(255, 255, 255, 0.6);
+  --key-text-color: var(--color-dark-1);
+  --page-control-color: rgba(255, 255, 255, 0.8);
+}
+
+#bhe-hotbar.bhe-hidden {
+  display: none;
+}
+
+#bhe-hotbar.faded-ui {
+  transition: opacity var(--ui-fade-delay) var(--ui-fade-duration);
+}
+
+#bhe-hotbar.faded-ui:hover {
+  transition: opacity var(--ui-fade-duration);
+}
+
+/* Narrow screens: five by two, like core's row. */
+#bhe-hotbar.sm:not(.bhe-in-grid) {
+  height: calc((var(--hotbar-size) * 2) + 8px);
+}
+
+#bhe-hotbar.sm:not(.bhe-in-grid) .bhe-slots {
+  width: calc((var(--bhe-fit-size, var(--hotbar-size)) * 5) + 32px);
+}
+
+/* Slots */
+
+#bhe-hotbar .bhe-slots {
+  flex: 0 0 auto;
+  width: auto;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-end;
+  align-content: flex-end;
+  flex-wrap: wrap;
+  list-style: none;
+  pointer-events: all;
+}
+
+#bhe-hotbar .slot {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--bhe-fit-size, var(--hotbar-size));
+  height: var(--bhe-fit-size, var(--hotbar-size));
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: var(--slot-color, var(--color-cool-5-90));
+  cursor: var(--cursor-pointer);
+}
+
+#bhe-hotbar .slot:hover {
+  border-color: var(--color-warm-1);
+}
+
+#bhe-hotbar .slot.drop-target {
+  background: var(--color-cool-4);
+  border-color: var(--color-warm-2);
+}
+
+#bhe-hotbar .slot .slot-icon {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+#bhe-hotbar .slot .key {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  line-height: 20px;
+  padding-right: 2px;
+  background: var(--key-bg-color-empty, var(--color-cool-5));
+  border-radius: 10px 0 8px;
+  color: var(--key-text-color, var(--color-light-1));
+  text-align: center;
+  pointer-events: none;
+}
+
+#bhe-hotbar .slot.full .key {
+  background: var(--key-bg-color-full, var(--color-cool-5));
+}
+
+/* Page selector */
+
+#bhe-hotbar .bhe-page-controls {
+  position: relative;
+  flex: 0 0 auto;
+  height: var(--hotbar-size);
+  justify-content: space-between;
+  pointer-events: all;
+}
+
+/* Short enough that an arrow's hover box stops before the page number. */
+#bhe-hotbar .bhe-page-control {
+  --button-size: 1.5rem;
+  --button-text-color: var(--page-control-color, var(--color-cool-5));
+  --button-hover-text-color: var(--color-warm-2);
+  --fa-display: inline-grid;
+  flex: 0 0 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  font-size: var(--font-size-18);
+  transition: opacity 0.25s;
+}
+
+#bhe-hotbar .bhe-page-control:hover,
+#bhe-hotbar .bhe-page-control:focus:not(:focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+#bhe-hotbar .bhe-page-control:focus-visible {
+  outline: 1px solid var(--color-warm-2);
+  outline-offset: 1px;
+}
+
+#bhe-hotbar .page-next::before {
+  transform: scaleX(0.75);
+}
+
+#bhe-hotbar .page-prev::before {
+  transform: scaleX(0.75) scaleY(-1);
+}
+
+#bhe-hotbar .bhe-page-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  text-align: center;
+  color: var(--color-light-2);
+  pointer-events: none;
+}
+
+/* Core layout: both rows side by side at the bottom of the screen. */
+
+#bhe-dock {
+  /* Take the bottom area's width without adding to it, so a wide pair of rows
+     can't push the sidebar off screen; the rows overflow it, centred. */
+  contain: inline-size;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+
+/* Inside another module's grid (PF2e HUD's persistent HUD): next column over,
+   styled the way PF2e HUD styles the first row. */
+
+#bhe-hotbar.bhe-in-grid {
+  /* Add no width to the panel (a centred panel would otherwise grow and push
+     the sidebar off screen); the row overflows its grid column to the right. */
+  contain: inline-size;
+  margin: 0 0 0 5px;
+  align-self: end;
+}
+
+#pf2e-hud-persistent #bhe-hotbar {
+  height: 100%;
+  padding: 0;
+  gap: var(--panel-gap, 5px);
+  flex-wrap: nowrap;
+  opacity: 1;
+}
+
+#pf2e-hud-persistent #bhe-hotbar .bhe-slots {
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+#pf2e-hud-persistent #bhe-hotbar .slot {
+  border-radius: var(--outer-border-radius);
+  background: var(--panel-background);
+  width: var(--bhe-fit-size, var(--row-2fr));
+  height: var(--bhe-fit-size, var(--row-2fr));
+}
+
+#pf2e-hud-persistent #bhe-hotbar .bhe-page-controls {
+  --button-size: 1.4em;
+  height: 100%;
+  background: radial-gradient(var(--color-cool-4-90) -200%, var(--color-cool-5-90));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-warm-5);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  text-shadow: var(--text-shadow);
+  color: var(--pfui-main-grey-color);
+}
+
+#pf2e-hud-persistent #bhe-hotbar .bhe-page-control {
+  font-size: var(--hud-font-size);
+  color: var(--color);
+}
+
+/* The floating chat input, lifted clear of the second row. */
+
+#chat-notifications.bhe-lifted {
+  margin-bottom: var(--bhe-chat-lift, 0);
+}
