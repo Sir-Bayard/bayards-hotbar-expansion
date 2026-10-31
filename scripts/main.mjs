@@ -106,7 +106,7 @@ function applyAccent(preview = null) {
 
 /**
  * In the settings window: show the accent on the row as it is changed, before
- * saving (closing without saving puts the stored one back), and grey out the
+ * saving (closing without saving puts the stored one back), and gray out the
  * custom color and strength when they don't apply.
  */
 function onRenderSettings(app, html) {
@@ -126,7 +126,7 @@ function onRenderSettings(app, html) {
   syncSettings(root);
 }
 
-/** Read the accent fields from the settings form, preview them and grey out the unused ones. */
+/** Read the accent fields from the settings form, preview them and gray out the unused ones. */
 function syncSettings(root) {
   const field = key => root.querySelector(`[name="${MODULE_ID}.${key}"]`);
   const select = field("accent");
