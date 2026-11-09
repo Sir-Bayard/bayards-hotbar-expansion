@@ -2,10 +2,10 @@
   "id": "bayards-hotbar-expansion",
   "title": "Bayard's Hotbar Expansion",
   "description": "A second hotbar row beside the first, with its own page selector, keys, slot count and accent color, and a GM editor for any user's hotbar. Works with PF2e HUD's persistent HUD.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "compatibility": {
     "minimum": "14",
-    "verified": "14.369"
+    "verified": "14.370"
   },
   "authors": [
     {

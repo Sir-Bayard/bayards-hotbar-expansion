@@ -61,7 +61,7 @@ To tell the rows apart at a glance, give the second row an accent color (setting
 
 ## For the GM: edit a player's hotbar
 
-Right-click a user in the Players list (bottom left) and choose **Edit Hotbar**. A window shows all five pages of that user's hotbar, ten slots each. The user's name in the title bar is a menu: pick another user to switch the window to their hotbar. The code button beside it opens the Macro Directory, to drag macros from.
+Right-click a user in the Players list (bottom left) and choose **Edit Hotbar**. A window shows all five pages of that user's hotbar, ten slots each. The user's name in the title bar is a menu: pick another user to switch the window to their hotbar. The code button beside it opens the Macro Directory, to drag macros from. The window opens where you last put it.
 
 - **Add:** drop a macro on a slot, from the Macro Directory or a compendium (compendium macros are imported into the world). Everything else becomes a macro the way it would on Foundry's own hotbar: in Pathfinder 2e, a strike or action from a character sheet becomes a strike or action macro, an item an item macro, and a condition or effect a toggle; roll tables become a "draw" macro, and other documents a macro that opens their sheet.
 - **Move:** drag a macro to another slot or page. Dropping it on a filled slot swaps the two.
