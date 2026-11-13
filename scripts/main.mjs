@@ -373,7 +373,7 @@ function schedule() {
   }, 0);
 }
 
-/** Again after the sidebar's slide has finished. */
+/** Schedule, then again once the sidebar's slide has finished. */
 function scheduleSettled() {
   schedule();
   setTimeout(schedule, 400);
@@ -496,7 +496,7 @@ async function startBar() {
   // changePage only re-renders a bar that is already on screen.
   await bar.changePage(clampPage(game.settings.get(MODULE_ID, "page")));
   await bar.render({ force: true });
-  // #hotbar shown, hidden or resized without any app rendering.
+  // Catch #hotbar being shown, hidden or resized without any app rendering.
   const hotbar = document.getElementById("hotbar");
   if (hotbar && typeof ResizeObserver === "function") {
     observer = new ResizeObserver(() => schedule());

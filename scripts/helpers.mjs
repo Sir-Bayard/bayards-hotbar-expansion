@@ -7,7 +7,7 @@
 export const PAGE_SIZE = 10;
 export const PAGE_COUNT = 5;
 
-/** Clamp a stored page to a whole number from 1 to 5 (fallback 2). */
+/** A stored page as a whole number from 1 to 5, else the fallback (2). */
 export function clampPage(value, fallback = 2) {
   const n = Number(value);
   if (!Number.isInteger(n) || n < 1 || n > PAGE_COUNT) return fallback;
@@ -21,20 +21,16 @@ export function clampSlots(value, fallback = PAGE_SIZE) {
   return Math.min(PAGE_SIZE, Math.max(1, n));
 }
 
-/**
- * The user's hotbar slot number (1 to 50) for position n (1 to 10) on a page.
- * Returns null when n is outside the shown slots.
- */
+/** The user's hotbar slot (1 to 50) for position n on a page, or null when n is outside the shown slots. */
 export function slotFor(page, n, shown = PAGE_SIZE) {
   if (!Number.isInteger(n) || n < 1 || n > Math.min(shown, PAGE_SIZE)) return null;
   return (clampPage(page, 1) - 1) * PAGE_SIZE + n;
 }
 
 /**
- * Where the second row starts in a CSS grid, given the hotbar's computed
- * grid-column-end. A line number stays a number; a named area ("full") becomes
- * its end line ("full-end"); a line name is used as it is. Anything else (auto,
- * a span) falls back to -1, the last explicit line.
+ * Where the second row starts in a CSS grid, given the hotbar's computed grid-column-end. A line number stays a
+ * number; a name already ending in -start or -end is used as it is; any other name (an area such as "full") becomes
+ * its end line ("full-end"). Anything else (auto, a span) falls back to -1, the last explicit line.
  */
 export function gridStartAfter(columnEnd) {
   const v = String(columnEnd ?? "").trim();
@@ -92,8 +88,8 @@ export function normalizeHex(value) {
 }
 
 /**
- * The accent color for a choice: a preset, the user's own color ("player"), a
- * custom color ("custom"), or null for none (or anything unusable).
+ * The accent color for a choice: a preset, the user's own color ("player", null if unusable), a custom color
+ * ("custom", CUSTOM_DEFAULT if unusable), or null for none or an unknown choice.
  */
 export function accentColor(choice, custom, userColor) {
   if (Object.hasOwn(ACCENTS, String(choice))) return ACCENTS[choice];

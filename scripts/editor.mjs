@@ -161,10 +161,12 @@ let EditorClass = null;
 /* Window memory                                                      */
 /* ------------------------------------------------------------------ */
 
-/* The same code in each of Sir Bayard's modules. A window made with rememberWindow keeps the size and place the user
- * gives it, in this browser, and comes back from minimized whole: Foundry's restore animation can stall at the title
- * bar's height (seen on 14.370, core windows too) and Foundry sets the size while it runs, so a restored window came
- * back as a strip. */
+/*
+ * Window memory, shared verbatim with the author's other modules (keep the copies in sync). A window made with
+ * rememberWindow keeps the size and place the user gives it, in this browser, and restores from minimized at full
+ * size: Foundry's restore animation can stall at the title bar's height (seen on Foundry 14.370, core windows too)
+ * and Foundry sets the size while it runs, which would leave the window a strip.
+ */
 
 /** Wait for an element's own transitions to end; a hidden tab pauses them, so after a second they're finished by hand. */
 async function settleWindow(el) {
@@ -577,8 +579,8 @@ function defineEditor() {
     }
 
     /**
-     * Click a full slot to edit its macro; an empty one to make a new macro
-     * there. A new macro closed without a name or command is removed again.
+     * Click a full slot to edit its macro; an empty one to make a new macro there. A new macro closed still with its
+     * default name and no command is removed again.
      */
     static async #onSlot(event, target) {
       const user = this.user;
