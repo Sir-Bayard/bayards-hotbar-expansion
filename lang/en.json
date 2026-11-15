@@ -87,7 +87,10 @@
       "Copy": "Copy",
       "Copied": "{name}'s hotbar is updated.",
       "SharedCount": "{count} of its macros shared with {name} (Limited).",
-      "ClearConfirm": "Clear page {page} of {name}'s hotbar? The macros stay in the world."
+      "ClearConfirm": "Clear page {page} of {name}'s hotbar? The macros stay in the world.",
+      "PageMenuClear": "Clear this page",
+      "PageMenuClearFor": "Page {page}: clear",
+      "SamePage": "That's the same page of the same hotbar, so there's nothing to copy."
     },
     "PickPage": "Pick a page",
     "PageN": "Page {page}",

@@ -70,6 +70,7 @@ export function watchUsers() {
   };
   Hooks.on("createSetting", onSetting);
   Hooks.on("updateSetting", onSetting);
+  Hooks.on("deleteSetting", onSetting);
 }
 
 /**
@@ -77,14 +78,24 @@ export function watchUsers() {
  * user's user settings; a player's only their own. Undefined if not stored.
  */
 function userSetting(user, key) {
-  if (user.id === game.user.id) return game.settings.get(MODULE_ID, key);
-  return game.settings.storage.get("user")?.find(s => s.key === `${MODULE_ID}.${key}` && s.user === user.id)?.value;
+  try {
+    if (user.id === game.user.id) return game.settings.get(MODULE_ID, key);
+    const found = game.settings.storage.get("user")?.find(s => s.key === `${MODULE_ID}.${key}` && (s.user?.id ?? s.user) === user.id);
+    return found?.value;
+  } catch {
+    // Only a marker depends on it; never let it break the editor's render.
+    return undefined;
+  }
 }
 
 /** Macros made from an empty slot are flagged with their default name until someone fills them in. */
 const BLANK_FLAG = "blank";
-/** A flagged macro older than this is a leftover, not one someone is still filling in. */
-const BLANK_AGE_MS = 10 * 60 * 1000;
+/**
+ * A flagged macro older than this is a leftover, not one someone is still
+ * filling in. Generous, since the age compares this client's clock with the
+ * server's creation time.
+ */
+const BLANK_AGE_MS = 60 * 60 * 1000;
 
 /**
  * Remove macros made from an empty slot that were never filled in: a reload,
@@ -92,25 +103,38 @@ const BLANK_AGE_MS = 10 * 60 * 1000;
  * Each still has its default name, no command and the flag, and is old enough.
  * A GM clears them from every hotbar; a player only their own.
  */
-export async function sweepBlankMacros() {
-  try {
-    const now = Date.now();
-    const blanks = game.macros.filter(m => {
-      const blank = m.flags?.[MODULE_ID]?.[BLANK_FLAG];
-      return typeof blank === "string" && m.name === blank && !m.command && m.isOwner
-        && now - (m._stats?.createdTime ?? now) > BLANK_AGE_MS;
-    });
-    for (const macro of blanks) {
+let sweeping = null;
+
+export function sweepBlankMacros() {
+  // One sweep at a time on this client (the ready sweep and an editor's can overlap).
+  sweeping ??= sweepOnce().finally(() => (sweeping = null));
+  return sweeping;
+}
+
+async function sweepOnce() {
+  const now = Date.now();
+  const blanks = game.macros.filter(m => {
+    const blank = m.flags?.[MODULE_ID]?.[BLANK_FLAG];
+    if (typeof blank !== "string" || m.name !== blank || m.command || !m.isOwner) return false;
+    if (now - (m._stats?.createdTime ?? now) <= BLANK_AGE_MS) return false;
+    // Not while someone may be filling it in: its sheet open here, or its author online elsewhere.
+    if (Object.values(m.apps ?? {}).some(app => app.rendered)) return false;
+    const author = m.author;
+    return !(author && author.active && author.id !== game.user.id);
+  });
+  for (const macro of blanks) {
+    try {
       for (const user of game.users) {
         if (!game.user.isGM && user.id !== game.user.id) continue;
         for (const [slot, id] of Object.entries(user.hotbar)) {
           if (id === macro.id) await assign(user.id, null, Number(slot));
         }
       }
-      await macro.delete();
+      // Another client may have swept it meanwhile.
+      if (game.macros.has(macro.id)) await macro.delete();
+    } catch (error) {
+      console.error(`${MODULE_ID} |`, error);
     }
-  } catch (error) {
-    console.error(`${MODULE_ID} |`, error);
   }
 }
 
@@ -120,7 +144,7 @@ function userIdOf(li) {
 
 /** Whether this client may make a new script macro from an empty slot. */
 function canCreateMacro() {
-  return game.user.isGM || (CONFIG.Macro.documentClass.canUserCreate(game.user) && game.user.can("MACRO_SCRIPT"));
+  return CONFIG.Macro.documentClass.canUserCreate(game.user) && game.user.can("MACRO_SCRIPT");
 }
 
 /**
@@ -142,8 +166,12 @@ function assign(userId, macro, slot, options) {
 function writeHotbar(userId, build) {
   return writes(async () => {
     const user = game.users.get(userId);
-    if (!user) return;
-    await user.update({ hotbar: build({ ...user.hotbar }) }, { diff: false, recursive: false, noHook: true });
+    if (!user) return false;
+    const next = build({ ...user.hotbar });
+    // A build can decline (null): nothing is written.
+    if (!next) return false;
+    await user.update({ hotbar: next }, { diff: false, recursive: false, noHook: true });
+    return true;
   });
 }
 
@@ -473,6 +501,8 @@ function defineEditor() {
         pages,
         size: PAGE_SIZE,
         canCreate: canCreateMacro(),
+        pageMenu: game.user.isGM ? "BHE.Editor.PageMenu" : "BHE.Editor.PageMenuClear",
+        pageMenuFor: game.user.isGM ? "BHE.Editor.PageMenuFor" : "BHE.Editor.PageMenuClearFor",
         rowTwoText: game.i18n.format("BHE.Editor.RowTwo", { name: user?.name ?? "" })
       });
     }
@@ -611,6 +641,7 @@ function defineEditor() {
         {
           label: "MACRO.Edit",
           icon: '<i class="fa-solid fa-edit"></i>',
+          visible: li => game.user.isGM || !!this.#macroOf(li)?.isOwner,
           onClick: (_event, li) => this.#macroOf(li)?.sheet.render({ force: true })
         },
         {
@@ -650,9 +681,10 @@ function defineEditor() {
       ];
     }
 
-    /** The other users as <option>s (the shown one too: a page can be copied within a hotbar). */
-    #userOptions() {
+    /** Users as <option>s; the shown one too unless left out (a page can be copied within a hotbar). */
+    #userOptions({ exclude = null } = {}) {
       return game.users.contents
+        .filter(u => u.id !== exclude)
         .slice().sort((a, b) => (a.isGM - b.isGM) || a.name.localeCompare(b.name))
         .map(u => `<option value="${u.id}">${esc(u.isGM ? game.i18n.format("BHE.Editor.GMUser", { name: u.name }) : u.name)}</option>`)
         .join("");
@@ -705,26 +737,37 @@ function defineEditor() {
       const picked = await this.#ask(game.i18n.localize("BHE.Editor.CopyPageTitle"), hint, fields);
       const source = picked && game.users.get(picked.from);
       if (!source) return;
-      const fromPage = Number(picked.page);
-      if (source.id === user.id && fromPage === toPage) return;
+      const fromPage = clampPage(picked.page, toPage);
+      if (source.id === user.id && fromPage === toPage) {
+        ui.notifications.warn("BHE.Editor.SamePage", { localize: true });
+        return;
+      }
       const ids = pageSlots(fromPage).map(slot => source.hotbar[slot]).filter(Boolean);
       const shared = await this.#shareAll(ids, user);
-      await writeHotbar(user.id, hotbar => withPageCopied(hotbar, game.users.get(source.id)?.hotbar, toPage, fromPage));
-      this.#reportCopy(user, shared);
+      // If the source user went away meanwhile, write nothing rather than an empty page.
+      const done = await writeHotbar(user.id, hotbar => {
+        const from = game.users.get(source.id)?.hotbar;
+        return from ? withPageCopied(hotbar, from, toPage, fromPage) : null;
+      });
+      if (done) this.#reportCopy(user, shared);
     }
 
     /** Copy Whole Hotbar From: all five pages become an exact copy of another user's. */
     async #copyHotbar() {
       const user = this.user;
       if (!user || !game.user.isGM) return;
-      const fields = `<div class="form-group"><label>${game.i18n.localize("BHE.Editor.From")}</label><select name="from">${this.#userOptions()}</select></div>`;
+      const fields = `<div class="form-group"><label>${game.i18n.localize("BHE.Editor.From")}</label><select name="from">${this.#userOptions({ exclude: user.id })}</select></div>`;
       const hint = game.i18n.format("BHE.Editor.CopyHotbarHint", { name: esc(user.name) });
       const picked = await this.#ask(game.i18n.localize("BHE.Editor.CopyHotbarTitle"), hint, fields);
       const source = picked && game.users.get(picked.from);
       if (!source || source.id === user.id) return;
       const shared = await this.#shareAll(Object.values(hotbarCopy(source.hotbar)), user);
-      await writeHotbar(user.id, () => hotbarCopy(game.users.get(source.id)?.hotbar));
-      this.#reportCopy(user, shared);
+      // If the source user went away meanwhile, write nothing rather than an empty hotbar.
+      const done = await writeHotbar(user.id, () => {
+        const from = game.users.get(source.id)?.hotbar;
+        return from ? hotbarCopy(from) : null;
+      });
+      if (done) this.#reportCopy(user, shared);
     }
 
     /** Clear Page: empty this page of the hotbar (the macros stay in the world), after a confirm. */
@@ -744,17 +787,24 @@ function defineEditor() {
     /** Remove from Slot: only if the slot still holds the macro the menu was opened on. */
     async #remove(li) {
       const slot = Number(li.dataset.slot);
-      if (this.user?.hotbar[slot] !== li.dataset.macroId) {
-        ui.notifications.warn("BHE.Editor.SlotChanged", { localize: true });
-        return;
+      const id = li.dataset.macroId;
+      try {
+        // Checked when the write's turn comes, so a drop queued before it can't be the one removed.
+        const done = await writeHotbar(this.userId, hotbar => {
+          if (hotbar[slot] !== id) return null;
+          delete hotbar[slot];
+          return hotbar;
+        });
+        if (!done) ui.notifications.warn("BHE.Editor.SlotChanged", { localize: true });
+      } catch (error) {
+        this.#report(error);
       }
-      await assign(this.userId, null, slot).catch(error => this.#report(error));
     }
 
-    /** Click a full slot to edit its macro. */
+    /** Click a full slot to edit its macro (one's own, or any for a GM, as core allows). */
     static async #onSlot(event, target) {
       const macro = this.#macroAt(target);
-      if (macro) return macro.sheet.render({ force: true });
+      if (macro && (game.user.isGM || macro.isOwner)) return macro.sheet.render({ force: true });
     }
 
     /**

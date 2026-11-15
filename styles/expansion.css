@@ -246,10 +246,9 @@
   color: var(--color);
 }
 
-/* Accent color (setting): a wash over each slot's own background, under its
-   icon (an inset shadow paints above the background and below the content),
-   a tinted border that still shows around a full slot's icon, solid number
-   badges, and the page selector's border. */
+/* Accent color (setting): a wash over each slot's own background, a tinted
+   border that still shows around a full slot's icon, solid number badges, and
+   the page selector's border. */
 
 /* The wash is its own layer over the slot's background and under its icon and
    key, so a theme's slot background, shadow or glow stays as it is. */

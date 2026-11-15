@@ -37,7 +37,11 @@ function defineExpansionBar() {
     /** Show only the first N slots of the page (the setting), each with its key in the tooltip. */
     async _prepareContext(options) {
       const context = await super._prepareContext(options);
-      context.slots = context.slots.slice(0, shownSlots()).map((slot, i) => ({ ...slot, keyHint: keyHint(i + 1) }));
+      context.slots = context.slots.slice(0, shownSlots()).map((slot, i) => {
+        const key = keyHint(i + 1);
+        const tip = slot.tooltip && key ? game.i18n.format("BHE.KeyHint", { name: slot.tooltip, key }) : slot.tooltip;
+        return { ...slot, tooltipText: tip };
+      });
       // What this render showed, so a render of core's row for a page flip alone can be skipped.
       this.shownHotbar = JSON.stringify(game.user.hotbar);
       return context;
@@ -68,10 +72,11 @@ function defineExpansionBar() {
     #onWheel(event) {
       if (!event.deltaY) return;
       event.preventDefault();
-      // A trackpad sends a stream of small wheel events; take one page per pause.
-      if (event.timeStamp - this.#wheelAt < 150) return;
+      // A trackpad sends a stream of wheel events per swipe: flip only on the
+      // first event after a pause, so one swipe is one page.
+      const fresh = event.timeStamp - this.#wheelAt >= 150;
       this.#wheelAt = event.timeStamp;
-      this.cyclePage(event.deltaY < 0 ? 1 : -1);
+      if (fresh) this.cyclePage(event.deltaY < 0 ? 1 : -1);
     }
 
     /** This row has no lock or mute buttons to update. */
@@ -116,6 +121,11 @@ function shownSlots() {
   return clampSlots(game.settings.get(MODULE_ID, "slots"));
 }
 
+/** The row is on and on screen (core's row hides it when core's row is hidden). */
+function rowShown() {
+  return !!bar?.rendered && !bar.element?.classList.contains("bhe-hidden");
+}
+
 /** The key bound to slot n of the second row, as people read it ("Alt+Shift+3"), or "" if none. */
 function keyHint(n) {
   const binding = game.keybindings.get(MODULE_ID, `slot${n}`)?.[0];
@@ -127,14 +137,14 @@ function keyHint(n) {
 
 /** Flip the second row's page by one (keys); false while the row is off, so the key passes on. */
 function flipPage(direction) {
-  if (!bar?.rendered) return false;
+  if (!rowShown()) return false;
   bar.cyclePage(direction);
   return true;
 }
 
 /** Run the macro in slot n (1 to 10) of the second row's page. */
 function executeSlot(n) {
-  if (!bar?.rendered) return false;
+  if (!rowShown()) return false;
   const slot = slotFor(bar.page, n, shownSlots());
   if (!slot) return false;
   const macro = game.macros.get(game.user.hotbar[slot]);
@@ -308,11 +318,16 @@ Hooks.once("ready", async () => {
   await syncBar();
 });
 
-// Core's row re-renders when the user's hotbar changes, and also when its own
-// page flips; show the hotbar's changes here, and skip the flips.
+// Core's row re-renders when the user's hotbar changes, when its own page
+// flips, and when another module asks it to (to redraw slot decorations).
+// Follow all of those except a flip that changed nothing on this row.
+let corePage = null;
 Hooks.on("renderHotbar", app => {
   if (!bar || app === bar || app !== ui.hotbar) return;
-  if (JSON.stringify(game.user.hotbar) !== bar.shownHotbar) bar.render();
+  const flipped = corePage !== null && ui.hotbar.page !== corePage;
+  corePage = ui.hotbar.page;
+  if (flipped && JSON.stringify(game.user.hotbar) === bar.shownHotbar) return;
+  bar.render();
 });
 
 // Another module may move or rebuild the panel that holds #hotbar (PF2e HUD
@@ -340,6 +355,10 @@ Hooks.on("getUserContextOptions", addUserContextOption);
 watchUsers();
 
 Hooks.on("collapseSidebar", scheduleSettled);
-// The interface scale or font size, saved from the (framed) Settings window.
-Hooks.on("clientSettingChanged", () => schedule());
+// The interface scale or font size, saved from the (framed) Settings window;
+// and rebound keys, which the slot tooltips name.
+Hooks.on("clientSettingChanged", key => {
+  if (key === "core.keybindings") bar?.render();
+  schedule();
+});
 Hooks.on("changeSidebarTab", scheduleSettled);

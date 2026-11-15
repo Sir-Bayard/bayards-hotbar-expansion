@@ -1,7 +1,7 @@
 <menu class="bhe-slots flexrow" data-tooltip-direction="UP">
   {{#each slots}}
   <li class="slot {{cssClass}}" role="button" data-action="execute" data-slot="{{slot}}" aria-label="{{ariaLabel}}"
-      {{#if tooltip}}data-tooltip-text="{{#if keyHint}}{{tooltip}} ({{keyHint}}){{else}}{{tooltip}}{{/if}}" draggable="true"{{/if}}>
+      {{#if tooltip}}data-tooltip-text="{{tooltipText}}" draggable="true"{{/if}}>
     {{#if img}}<img class="slot-icon" src="{{img}}" alt="{{tooltip}}">{{/if}}
     <span class="key">{{key}}</span>
   </li>
