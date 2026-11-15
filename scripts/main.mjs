@@ -1,6 +1,6 @@
 import { addUserContextOption, openHotbarEditor, watchUsers } from "./editor.mjs";
 import { applyAccent, onRenderSettings, resetAccent, useAccentBar } from "./accent.mjs";
-import { ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, clampPage, clampSlots, serial, slotFor } from "./helpers.mjs";
+import { ACCENTS, CUSTOM_DEFAULT, PAGE_COUNT, PAGE_SIZE, clampPage, clampSlots, serial, slotFor } from "./helpers.mjs";
 import { clearLayout, observeLayout, place, schedule, scheduleSettled, unobserveLayout, useBar } from "./layout.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
@@ -34,11 +34,44 @@ function defineExpansionBar() {
       hotbar: { root: true, template: TEMPLATE }
     };
 
-    /** Show only the first N slots of the page (the setting). */
+    /** Show only the first N slots of the page (the setting), each with its key in the tooltip. */
     async _prepareContext(options) {
       const context = await super._prepareContext(options);
-      context.slots = context.slots.slice(0, shownSlots());
+      context.slots = context.slots.slice(0, shownSlots()).map((slot, i) => ({ ...slot, keyHint: keyHint(i + 1) }));
+      // What this render showed, so a render of core's row for a page flip alone can be skipped.
+      this.shownHotbar = JSON.stringify(game.user.hotbar);
       return context;
+    }
+
+    /** Clicking the page number opens a menu of the five pages. */
+    async _onFirstRender(context, options) {
+      await super._onFirstRender(context, options);
+      this._createContextMenu(this.#pageOptions, ".bhe-page-number", {
+        eventName: "click",
+        fixed: true,
+        hookName: "getBhePageOptions",
+        parentClassHooks: false
+      });
+    }
+
+    #pageOptions() {
+      return Array.from({ length: PAGE_COUNT }, (_, i) => ({
+        label: game.i18n.format("BHE.PageN", { page: i + 1 }),
+        icon: '<i class="fa-solid fa-table-cells-large"></i>',
+        onClick: () => this.changePage(i + 1)
+      }));
+    }
+
+    /** The mouse wheel over the page selector flips pages, one per notch. */
+    #wheelAt = -Infinity;
+
+    #onWheel(event) {
+      if (!event.deltaY) return;
+      event.preventDefault();
+      // A trackpad sends a stream of small wheel events; take one page per pause.
+      if (event.timeStamp - this.#wheelAt < 150) return;
+      this.#wheelAt = event.timeStamp;
+      this.cyclePage(event.deltaY < 0 ? 1 : -1);
     }
 
     /** This row has no lock or mute buttons to update. */
@@ -54,6 +87,11 @@ function defineExpansionBar() {
 
     async _onRender(context, options) {
       await super._onRender(context, options);
+      const nav = this.element.querySelector(".bhe-page-controls");
+      if (nav && !nav.dataset.bheWheel) {
+        nav.dataset.bheWheel = "1";
+        nav.addEventListener("wheel", event => this.#onWheel(event), { passive: false });
+      }
       applyAccent();
       schedule(true);
     }
@@ -76,6 +114,22 @@ function defineExpansionBar() {
 
 function shownSlots() {
   return clampSlots(game.settings.get(MODULE_ID, "slots"));
+}
+
+/** The key bound to slot n of the second row, as people read it ("Alt+Shift+3"), or "" if none. */
+function keyHint(n) {
+  const binding = game.keybindings.get(MODULE_ID, `slot${n}`)?.[0];
+  if (!binding?.key) return "";
+  const { KeyboardManager } = foundry.helpers.interaction;
+  const mods = (binding.modifiers ?? []).map(m => (m === KeyboardManager.MODIFIER_KEYS.CONTROL ? KeyboardManager.CONTROL_KEY_STRING : m));
+  return [...mods, KeyboardManager.getKeycodeDisplayString(binding.key)].join("+");
+}
+
+/** Flip the second row's page by one (keys); false while the row is off, so the key passes on. */
+function flipPage(direction) {
+  if (!bar?.rendered) return false;
+  bar.cyclePage(direction);
+  return true;
 }
 
 /** Run the macro in slot n (1 to 10) of the second row's page. */
@@ -178,6 +232,18 @@ Hooks.once("init", () => {
       precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
     });
   }
+  game.keybindings.register(MODULE_ID, "pageNext", {
+    name: "BHE.Keys.NextPage",
+    editable: [{ key: "ArrowUp", modifiers: [ALT, SHIFT] }],
+    onDown: () => flipPage(1),
+    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
+  });
+  game.keybindings.register(MODULE_ID, "pagePrevious", {
+    name: "BHE.Keys.PreviousPage",
+    editable: [{ key: "ArrowDown", modifiers: [ALT, SHIFT] }],
+    onDown: () => flipPage(-1),
+    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
+  });
 });
 
 /* -------------------------------------------- */
@@ -240,10 +306,11 @@ Hooks.once("ready", async () => {
   await syncBar();
 });
 
-// Core's row re-renders when the user's hotbar changes; show the same change here.
+// Core's row re-renders when the user's hotbar changes, and also when its own
+// page flips; show the hotbar's changes here, and skip the flips.
 Hooks.on("renderHotbar", app => {
-  if (!bar || app === bar) return;
-  if (app === ui.hotbar) bar.render();
+  if (!bar || app === bar || app !== ui.hotbar) return;
+  if (JSON.stringify(game.user.hotbar) !== bar.shownHotbar) bar.render();
 });
 
 // Another module may move or rebuild the panel that holds #hotbar (PF2e HUD

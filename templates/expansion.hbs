@@ -1,7 +1,7 @@
 <menu class="bhe-slots flexrow" data-tooltip-direction="UP">
   {{#each slots}}
   <li class="slot {{cssClass}}" role="button" data-action="execute" data-slot="{{slot}}" aria-label="{{ariaLabel}}"
-      {{#if tooltip}}data-tooltip-text="{{tooltip}}" draggable="true"{{/if}}>
+      {{#if tooltip}}data-tooltip-text="{{#if keyHint}}{{tooltip}} ({{keyHint}}){{else}}{{tooltip}}{{/if}}" draggable="true"{{/if}}>
     {{#if img}}<img class="slot-icon" src="{{img}}" alt="{{tooltip}}">{{/if}}
     <span class="key">{{key}}</span>
   </li>
@@ -10,7 +10,8 @@
 <nav class="bhe-page-controls flexcol" data-tooltip-direction="RIGHT">
   <button type="button" class="plain bhe-page-control page-next fa-solid fa-triangle icon" data-action="page"
           data-direction="1" data-tooltip="BHE.NextPage" aria-label="{{localize 'BHE.NextPage'}}"></button>
-  <span class="bhe-page-number" aria-live="polite">{{page}}</span>
+  <button type="button" class="plain bhe-page-number" aria-live="polite" data-tooltip="BHE.PickPage"
+          aria-label="{{localize 'BHE.PickPage'}}">{{page}}</button>
   <button type="button" class="plain bhe-page-control page-prev fa-solid fa-triangle icon" data-action="page"
           data-direction="-1" data-tooltip="BHE.PreviousPage" aria-label="{{localize 'BHE.PreviousPage'}}"></button>
 </nav>

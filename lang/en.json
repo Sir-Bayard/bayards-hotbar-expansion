@@ -6,7 +6,7 @@
         "Hint": "Adds a second hotbar row beside the first. Off until you turn it on; each user decides for themselves."
       },
       "Slots": {
-        "Name": "Second row: slots shown",
+        "Name": "Slots shown",
         "Hint": "How many slots the second hotbar row shows, from 1 to 10. Kept for this browser."
       },
       "LiftChat": {
@@ -14,23 +14,23 @@
         "Hint": "When the second row reaches under the right-hand column (Foundry's floating chat input, PF2e HUD's combat tracker and the like), move that column up so both can be used. When off, the second row shrinks to stop before those panels instead, and the chat input may cover it."
       },
       "Accent": {
-        "Name": "Second row: accent color",
+        "Name": "Accent color",
         "Hint": "Colors the second row's slot borders, number badges and page selector, and tints its empty slots, so it stands apart from the first row. Each user picks their own.",
         "None": "None (like the first row)",
         "Crimson": "Crimson",
         "Violet": "Violet",
         "Blue": "Blue",
         "Green": "Green",
-        "Black": "Black",
+        "Black": "Charcoal",
         "Player": "My player color",
         "Custom": "Custom color (below)"
       },
       "AccentCustom": {
-        "Name": "Second row: custom accent color",
+        "Name": "Custom accent color",
         "Hint": "Used when the accent color is set to Custom."
       },
       "AccentStrength": {
-        "Name": "Second row: accent strength",
+        "Name": "Accent strength",
         "Hint": "How strong the accent is on the slots (the tint behind empty slots and the slot borders), in percent. The number badges are always solid."
       }
     },
@@ -44,14 +44,16 @@
       "Slot7": "Second row: slot 7",
       "Slot8": "Second row: slot 8",
       "Slot9": "Second row: slot 9",
-      "Slot10": "Second row: slot 10"
+      "Slot10": "Second row: slot 10",
+      "NextPage": "Second row: next page",
+      "PreviousPage": "Second row: previous page"
     },
     "NextPage": "Next page",
     "PreviousPage": "Previous page",
     "Editor": {
       "Menu": "Edit Hotbar",
       "Title": "Hotbar: {name}",
-      "Help": "Drop macros, roll tables, items, strikes, actions or other documents on a slot; drag to move or swap. Click a macro to edit it, or an empty slot to make a new one. Right-click for more; Shift+right-click deletes the macro.",
+      "Help": "Drop anything on a slot. Drag to move. Right-click for more.",
       "PageLabel": "Page {page}",
       "Page": "Page",
       "Empty": "Empty slot",
@@ -68,6 +70,9 @@
       "GMUser": "{name} (GM)",
       "Failed": "That didn't work. The console (F12) has the details.",
       "DropFailed": "That drop couldn't be put on the hotbar. The console (F12) has the details."
-    }
+    },
+    "PickPage": "Pick a page",
+    "PageN": "Page {page}",
+    "KeyHint": "{name} ({key})"
   }
 }

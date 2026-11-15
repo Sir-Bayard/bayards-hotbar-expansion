@@ -1,6 +1,7 @@
 /**
  * The second row's accent color: its slots, number badges and page selector,
- * tinted per user, with a live preview in the settings window.
+ * tinted per user, with a live preview in the settings window. The settings
+ * window also grays out what doesn't apply (everything while the row is off).
  */
 
 import { accentColor, clampStrength, textOn } from "./helpers.mjs";
@@ -57,7 +58,7 @@ export function resetAccent() {
 /**
  * In the settings window: show the accent on the row as it is changed, before
  * saving (closing without saving puts the stored one back), and gray out the
- * custom color and strength when they don't apply.
+ * settings that don't apply.
  */
 export function onRenderSettings(app, html) {
   const root = html;
@@ -76,14 +77,19 @@ export function onRenderSettings(app, html) {
   syncSettings(root);
 }
 
-/** Read the accent fields from the settings form, preview them and gray out the unused ones. */
+/** Read the accent fields from the settings form, preview them and gray out the unused settings. */
 function syncSettings(root) {
   const field = key => root.querySelector(`[name="${MODULE_ID}.${key}"]`);
+  const gray = (key, off) => field(key)?.closest(".form-group")?.classList.toggle("bhe-setting-off", off);
   const select = field("accent");
   if (!select) return;
+  const enabled = field("enabled");
+  // With the row off, its other settings do nothing yet.
+  const rowOff = !!enabled && !enabled.checked;
+  for (const key of ["slots", "liftChat", "accent"]) gray(key, rowOff);
+  gray("accentCustom", rowOff || select.value !== "custom");
+  gray("accentStrength", rowOff || select.value === "none");
   const custom = field("accentCustom"), strength = field("accentStrength");
-  custom?.closest(".form-group")?.classList.toggle("bhe-setting-off", select.value !== "custom");
-  strength?.closest(".form-group")?.classList.toggle("bhe-setting-off", select.value === "none");
   const preview = { accent: select.value };
   if (custom?.value) preview.accentCustom = custom.value;
   if (strength && strength.value !== "" && strength.value != null) preview.accentStrength = strength.value;

@@ -76,7 +76,8 @@ export const ACCENTS = {
   violet: "#7b5ea7",
   blue: "#3a6ea5",
   green: "#3f8f4f",
-  black: "#111111"
+  // Kept as "black" so saved choices still match; shown as Charcoal, light enough to read on dark slots.
+  black: "#5c6168"
 };
 
 /** A "#rrggbb" color, or null. Accepts "#rgb" too. */
