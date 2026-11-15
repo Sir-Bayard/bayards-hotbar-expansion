@@ -7,7 +7,9 @@
  * player can open their own.
  */
 
-import { PAGE_COUNT, PAGE_SIZE, clampPage } from "./helpers.mjs";
+import {
+  PAGE_COUNT, PAGE_SIZE, clampPage, hotbarCopy, moveSource, pageSlots, withPageCleared, withPageCopied, writeQueue
+} from "./helpers.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
 const TEMPLATE = `modules/${MODULE_ID}/templates/editor.hbs`;
@@ -125,13 +127,23 @@ function canCreateMacro() {
  * two changes in flight at once lose one of them. The editor's changes go
  * through this queue, one after another, each reading the latest hotbar.
  */
-let queue = Promise.resolve();
+const writes = writeQueue();
 
 function assign(userId, macro, slot, options) {
-  const run = () => game.users.get(userId)?.assignHotbarMacro(macro, slot, options);
-  const next = queue.then(run);
-  queue = next.catch(() => {});
-  return next;
+  return writes(() => game.users.get(userId)?.assignHotbarMacro(macro, slot, options));
+}
+
+/**
+ * Rewrite a user's whole hotbar in one write (copies, Clear page), in the
+ * same queue: `build` gets the hotbar as it is when the write's turn comes.
+ * Written the way core writes it, replacing the old object.
+ */
+function writeHotbar(userId, build) {
+  return writes(async () => {
+    const user = game.users.get(userId);
+    if (!user) return;
+    await user.update({ hotbar: build({ ...user.hotbar }) }, { diff: false, recursive: false, noHook: true });
+  });
 }
 
 /** Notifications render markup, and names can be written by players: escape them. */
@@ -540,6 +552,13 @@ function defineEditor() {
         hookName: "getBheEditorSlotOptions",
         parentClassHooks: false
       });
+      // Click a page number: copy a page or a whole hotbar into this one, or clear the page.
+      this._createContextMenu(this.#pageMenuOptions, ".bhe-editor-page-number", {
+        eventName: "click",
+        fixed: true,
+        hookName: "getBheEditorPageOptions",
+        parentClassHooks: false
+      });
     }
 
     /** @override */
@@ -664,6 +683,120 @@ function defineEditor() {
       ];
     }
 
+    #pageMenuOptions() {
+      const pageOf = li => Number(li.closest("[data-page]")?.dataset.page);
+      return [
+        {
+          label: "BHE.Editor.CopyPage",
+          icon: '<i class="fa-solid fa-copy"></i>',
+          visible: () => game.user.isGM,
+          onClick: (_event, li) => this.#copyPage(pageOf(li)).catch(error => this.#report(error))
+        },
+        {
+          label: "BHE.Editor.CopyHotbar",
+          icon: '<i class="fa-solid fa-clone"></i>',
+          visible: () => game.user.isGM,
+          onClick: () => this.#copyHotbar().catch(error => this.#report(error))
+        },
+        {
+          label: "BHE.Editor.ClearPage",
+          icon: '<i class="fa-solid fa-eraser"></i>',
+          onClick: (_event, li) => this.#clearPage(pageOf(li)).catch(error => this.#report(error))
+        }
+      ];
+    }
+
+    /** The other users as <option>s (the shown one too: a page can be copied within a hotbar). */
+    #userOptions() {
+      return game.users.contents
+        .slice().sort((a, b) => (a.isGM - b.isGM) || a.name.localeCompare(b.name))
+        .map(u => `<option value="${u.id}">${esc(u.isGM ? game.i18n.format("BHE.Editor.GMUser", { name: u.name }) : u.name)}</option>`)
+        .join("");
+    }
+
+    /** Ask for a source in a small dialog; resolves to the form's values, or null if closed. */
+    async #ask(title, hint, fields) {
+      const { DialogV2 } = foundry.applications.api;
+      return DialogV2.prompt({
+        window: { title },
+        content: `<p class="hint">${hint}</p>${fields}`,
+        ok: {
+          label: "BHE.Editor.Copy",
+          icon: "fa-solid fa-copy",
+          callback: (_event, button) => new foundry.applications.ux.FormDataExtended(button.form).object
+        },
+        rejectClose: false
+      });
+    }
+
+    /** Share the copied macros a player can't run (GM only), once each; returns how many were shared. */
+    async #shareAll(ids, user) {
+      if (!game.user.isGM || user.isGM) return 0;
+      let shared = 0;
+      for (const id of new Set(ids)) {
+        const macro = game.macros.get(id);
+        if (!macro || canRun(macro, user)) continue;
+        await macro.update({ [`ownership.${user.id}`]: CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED });
+        shared++;
+      }
+      return shared;
+    }
+
+    #reportCopy(user, shared) {
+      const name = esc(user.name);
+      const done = game.i18n.format("BHE.Editor.Copied", { name });
+      ui.notifications.info(shared ? `${done} ${game.i18n.format("BHE.Editor.SharedCount", { count: shared, name })}` : done);
+    }
+
+    /** Copy Page From: this page becomes an exact copy of a page of any user's hotbar. */
+    async #copyPage(toPage) {
+      const user = this.user;
+      if (!user || !game.user.isGM) return;
+      const pages = Array.from({ length: PAGE_COUNT }, (_, i) => i + 1)
+        .map(p => `<option value="${p}"${p === toPage ? " selected" : ""}>${p}</option>`).join("");
+      const fields = `
+        <div class="form-group"><label>${game.i18n.localize("BHE.Editor.From")}</label><select name="from">${this.#userOptions()}</select></div>
+        <div class="form-group"><label>${game.i18n.localize("BHE.Editor.Page")}</label><select name="page">${pages}</select></div>`;
+      const hint = game.i18n.format("BHE.Editor.CopyPageHint", { page: toPage, name: esc(user.name) });
+      const picked = await this.#ask(game.i18n.localize("BHE.Editor.CopyPageTitle"), hint, fields);
+      const source = picked && game.users.get(picked.from);
+      if (!source) return;
+      const fromPage = Number(picked.page);
+      if (source.id === user.id && fromPage === toPage) return;
+      const ids = pageSlots(fromPage).map(slot => source.hotbar[slot]).filter(Boolean);
+      const shared = await this.#shareAll(ids, user);
+      await writeHotbar(user.id, hotbar => withPageCopied(hotbar, game.users.get(source.id)?.hotbar, toPage, fromPage));
+      this.#reportCopy(user, shared);
+    }
+
+    /** Copy Whole Hotbar From: all five pages become an exact copy of another user's. */
+    async #copyHotbar() {
+      const user = this.user;
+      if (!user || !game.user.isGM) return;
+      const fields = `<div class="form-group"><label>${game.i18n.localize("BHE.Editor.From")}</label><select name="from">${this.#userOptions()}</select></div>`;
+      const hint = game.i18n.format("BHE.Editor.CopyHotbarHint", { name: esc(user.name) });
+      const picked = await this.#ask(game.i18n.localize("BHE.Editor.CopyHotbarTitle"), hint, fields);
+      const source = picked && game.users.get(picked.from);
+      if (!source || source.id === user.id) return;
+      const shared = await this.#shareAll(Object.values(hotbarCopy(source.hotbar)), user);
+      await writeHotbar(user.id, () => hotbarCopy(game.users.get(source.id)?.hotbar));
+      this.#reportCopy(user, shared);
+    }
+
+    /** Clear Page: empty this page of the hotbar (the macros stay in the world), after a confirm. */
+    async #clearPage(page) {
+      const user = this.user;
+      if (!user) return;
+      const { DialogV2 } = foundry.applications.api;
+      const ok = await DialogV2.confirm({
+        window: { title: game.i18n.localize("BHE.Editor.ClearPage") },
+        content: `<p>${game.i18n.format("BHE.Editor.ClearConfirm", { page, name: esc(user.name) })}</p>`,
+        rejectClose: false
+      });
+      if (!ok) return;
+      await writeHotbar(user.id, hotbar => withPageCleared(hotbar, page));
+    }
+
     /** Remove from Slot: only if the slot still holds the macro the menu was opened on. */
     async #remove(li) {
       const slot = Number(li.dataset.slot);
@@ -781,10 +914,8 @@ function defineEditor() {
       const doc = await cls.fromDropData(data);
       if (!doc) return;
 
-      // A move within this editor, or from the GM's own hotbar when editing it.
-      let fromSlot;
-      if (data.bheEditor === user.id) fromSlot = Number(data.bheSlot);
-      else if (user.id === game.user.id && data.slot) fromSlot = Number(data.slot);
+      // A move within this editor, or from core's rows when editing one's own hotbar.
+      let fromSlot = moveSource(data, user.id, game.user.id);
       if (fromSlot === slot) return;
 
       let macro;

@@ -3,7 +3,8 @@
   <div class="bhe-editor-grid">
     {{#each pages}}
     <div class="bhe-editor-page" data-page="{{page}}">
-      <span class="bhe-editor-page-number" data-tooltip="BHE.Editor.Page" aria-hidden="true">{{page}}</span>
+      <button type="button" class="bhe-editor-page-number" data-tooltip="BHE.Editor.PageMenu"
+              aria-label="{{localize "BHE.Editor.PageMenuFor" page=page}}">{{page}}</button>
       {{#if rowTwo}}<i class="bhe-row-two fa-solid fa-eye" data-tooltip-text="{{@root.rowTwoText}}" aria-label="{{@root.rowTwoText}}"></i>
       {{else}}<span class="bhe-row-two" aria-hidden="true"></span>{{/if}}
       <div class="bhe-editor-slots" role="group" aria-label="{{localize "BHE.Editor.PageLabel" page=page}}">

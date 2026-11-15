@@ -324,11 +324,29 @@
   gap: 8px;
 }
 
+/* The page number is a button: click it for Copy Page, Copy Whole Hotbar and Clear Page. */
 .bhe-editor .bhe-editor-page-number {
-  flex: 0 0 18px;
-  text-align: center;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
   font-weight: bold;
+  text-align: center;
   color: var(--color-text-subtle, var(--color-text-secondary));
+  cursor: var(--cursor-pointer);
+}
+
+.bhe-editor .bhe-editor-page-number:hover,
+.bhe-editor .bhe-editor-page-number:focus-visible {
+  border-color: var(--color-warm-1);
+  color: var(--color-warm-1);
+  outline: none;
 }
 
 .bhe-editor .bhe-editor-slots {

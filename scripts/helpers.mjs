@@ -141,3 +141,63 @@ export function serial(onError = () => {}) {
     return tail;
   };
 }
+
+/**
+ * A queue for writes that must not overlap: each job starts when the one before
+ * it has settled. Unlike serial(), adding a job returns a promise that settles
+ * exactly as the job does (it rejects if the job throws), while a failed job
+ * still lets the next one run.
+ */
+export function writeQueue() {
+  let tail = Promise.resolve();
+  return job => {
+    const run = tail.then(() => job());
+    tail = run.catch(() => {});
+    return run;
+  };
+}
+
+/** The slots of a page: page 1 is slots 1 to 10, page 5 is 41 to 50. */
+export function pageSlots(page) {
+  const first = (clampPage(page, 1) - 1) * PAGE_SIZE + 1;
+  return Array.from({ length: PAGE_SIZE }, (_, i) => first + i);
+}
+
+/** A hotbar (slot to macro id) with one page made an exact copy of a page of another, empty slots included. */
+export function withPageCopied(target, source, toPage, fromPage = toPage) {
+  const next = { ...target };
+  const from = pageSlots(fromPage);
+  pageSlots(toPage).forEach((slot, i) => {
+    const id = source?.[from[i]];
+    if (id) next[slot] = id;
+    else delete next[slot];
+  });
+  return next;
+}
+
+/** A hotbar with one page emptied. */
+export function withPageCleared(target, page) {
+  const next = { ...target };
+  for (const slot of pageSlots(page)) delete next[slot];
+  return next;
+}
+
+/** An exact copy of a whole hotbar (its 50 slots, nothing else). */
+export function hotbarCopy(source) {
+  const next = {};
+  for (let slot = 1; slot <= PAGE_SIZE * PAGE_COUNT; slot++) if (source?.[slot]) next[slot] = source[slot];
+  return next;
+}
+
+/**
+ * Where a macro dropped on the hotbar of `userId` came from, if the drop is a
+ * move: a slot of the same hotbar in the editor (its own drag keys), or, when
+ * the hotbar is this client's own, a slot of core's rows (core's "slot" key).
+ * Undefined means a copy.
+ */
+export function moveSource(data, userId, ownId) {
+  if (data?.bheEditor === userId && data.bheSlot != null) return Number(data.bheSlot);
+  if (userId === ownId && data?.slot) return Number(data.slot);
+  return undefined;
+}
+
