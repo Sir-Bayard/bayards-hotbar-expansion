@@ -93,6 +93,12 @@ function canRun(macro, user) {
 /*  Catching a system's "put it on my hotbar"   */
 /* -------------------------------------------- */
 
+/** Catch slots count down from here; core rejects any slot below 1. */
+const FIRST_CATCH_SLOT = -100;
+const LAST_CATCH_SLOT = -100000;
+/** How long a drop waits for the system's assign before it lapses. */
+const CATCH_TIMEOUT_MS = 60000;
+
 /**
  * Systems (PF2e) build a macro from a drop on the hotbar and then call
  * game.user.assignHotbarMacro(macro, slot) with the slot they were given. The
@@ -104,13 +110,13 @@ function canRun(macro, user) {
  * instead of reaching core, which would throw.
  */
 const pending = new Map();
-let nextKey = -100;
+let nextKey = FIRST_CATCH_SLOT;
 let installed = null;
 
 function redirectAssign(handler) {
   const key = nextKey--;
-  if (nextKey < -100000) nextKey = -100;
-  const timer = setTimeout(() => finishRedirect(key), 60000);
+  if (nextKey < LAST_CATCH_SLOT) nextKey = FIRST_CATCH_SLOT;
+  const timer = setTimeout(() => finishRedirect(key), CATCH_TIMEOUT_MS);
   pending.set(key, { handler, timer });
   installRedirect();
   return key;
@@ -133,7 +139,7 @@ function installRedirect() {
     const key = Number(slot);
     const entry = finishRedirect(key);
     if (!entry) {
-      if (key <= -100) {
+      if (key <= FIRST_CATCH_SLOT) {
         ui.notifications.error("BHE.Editor.DropFailed", { localize: true });
         return Promise.resolve();
       }
