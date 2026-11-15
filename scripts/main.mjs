@@ -1,4 +1,4 @@
-import { addUserContextOption, openHotbarEditor, watchUsers } from "./editor.mjs";
+import { addUserContextOption, openHotbarEditor, sweepBlankMacros, watchUsers } from "./editor.mjs";
 import { applyAccent, onRenderSettings, resetAccent, useAccentBar } from "./accent.mjs";
 import { ACCENTS, CUSTOM_DEFAULT, PAGE_COUNT, PAGE_SIZE, clampPage, clampSlots, serial, slotFor } from "./helpers.mjs";
 import { clearLayout, observeLayout, place, schedule, scheduleSettled, unobserveLayout, useBar } from "./layout.mjs";
@@ -303,6 +303,8 @@ Hooks.once("ready", async () => {
     editHotbar: openHotbarEditor
   };
   window.addEventListener("resize", foundry.utils.debounce(() => schedule(), 100));
+  // New macros never filled in, left by a reload or crash; one GM clears them.
+  if (game.users.activeGM?.isSelf) sweepBlankMacros();
   await syncBar();
 });
 

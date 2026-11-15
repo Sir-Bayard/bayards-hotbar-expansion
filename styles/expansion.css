@@ -352,6 +352,39 @@
 
 .bhe-editor .slot.open {
   border-style: dashed;
+  cursor: default;
+}
+
+/* The "+" on an empty slot, shown on hover or focus: it makes a new macro there. */
+.bhe-editor .slot .bhe-new {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: var(--font-size-18);
+  color: var(--color-warm-1);
+  cursor: var(--cursor-pointer);
+}
+
+.bhe-editor .slot.open:hover .bhe-new,
+.bhe-editor .slot.open:focus-visible .bhe-new,
+.bhe-editor .slot.open:focus-within .bhe-new {
+  display: grid;
+  place-items: center;
+}
+
+/* The page this user has on their second row. */
+.bhe-editor .bhe-row-two {
+  flex: 0 0 14px;
+  font-size: var(--font-size-11);
+  color: var(--color-warm-1);
 }
 
 /* A macro the player can't run: a red border and an eye-slash mark. */
@@ -404,8 +437,8 @@
   pointer-events: none;
 }
 
-/* The title bar's user picker replaces the title text (kept for screen readers). */
-.bhe-editor .window-header .window-title {
+/* A GM's title bar: the user picker replaces the title text (kept for screen readers). */
+.bhe-editor:not(.bhe-own-hotbar) .window-header .window-title {
   position: absolute;
   width: 1px;
   height: 1px;

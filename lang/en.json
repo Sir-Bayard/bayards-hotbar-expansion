@@ -58,7 +58,7 @@
       "Page": "Page",
       "Empty": "Empty slot",
       "Remove": "Remove from Slot",
-      "Shared": "{macro} is now shared with {name} (Observer), so they can see and run it.",
+      "Shared": "{macro} is now shared with {name} (Limited), so they can run it.",
       "GMOnly": "Only a GM can edit other users' hotbars.",
       "Position": "Page {page}, slot {slot}",
       "Hidden": "the player can't run this",
@@ -69,7 +69,11 @@
       "User": "Whose hotbar",
       "GMUser": "{name} (GM)",
       "Failed": "That didn't work. The console (F12) has the details.",
-      "DropFailed": "That drop couldn't be put on the hotbar. The console (F12) has the details."
+      "DropFailed": "That drop couldn't be put on the hotbar. The console (F12) has the details.",
+      "New": "New macro",
+      "SlotChanged": "That slot holds something else now, so nothing was removed.",
+      "NotOwner": "{macro} isn't yours, so it can't be deleted from here.",
+      "RowTwo": "On {name}'s second row"
     },
     "PickPage": "Pick a page",
     "PageN": "Page {page}",

@@ -1,12 +1,13 @@
 /**
- * The GM's hotbar editor: one user's whole hotbar (five pages of ten) in a
- * window, opened from the Players list. Drop macros on it, move them between
- * slots and pages, create, edit, remove and delete them. A macro put on a
- * player's hotbar that they can't run is shared with them (Observer). The
- * user's name in the title bar switches the window to another user.
+ * The hotbar editor: one user's whole hotbar (five pages of ten) in a window,
+ * opened from the Players list. Drop macros on it, move them between slots and
+ * pages, create, edit, remove and delete them. A GM can open anyone's: a macro
+ * put on a player's hotbar that they can't run is shared with them (Limited),
+ * and the user's name in the title bar switches the window to another user. A
+ * player can open their own.
  */
 
-import { PAGE_COUNT, PAGE_SIZE } from "./helpers.mjs";
+import { PAGE_COUNT, PAGE_SIZE, clampPage } from "./helpers.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
 const TEMPLATE = `modules/${MODULE_ID}/templates/editor.hbs`;
@@ -15,14 +16,14 @@ const TEMPLATE = `modules/${MODULE_ID}/templates/editor.hbs`;
 let editor = null;
 let editorCount = 0;
 
-/** Open the editor for a user, or switch the open one to them. GM only. */
+/** Open the editor for a user, or switch the open one to them. A GM can open anyone's; a player only their own. */
 export function openHotbarEditor(user) {
-  if (!game.user.isGM) {
+  const target = typeof user === "string" ? game.users.get(user) : user;
+  if (!target) return null;
+  if (!game.user.isGM && target.id !== game.user.id) {
     ui.notifications.warn("BHE.Editor.GMOnly", { localize: true });
     return null;
   }
-  const target = typeof user === "string" ? game.users.get(user) : user;
-  if (!target) return null;
   if (editor && !editor.closing) {
     editor.switchUser(target);
     if (editor.minimized) editor.maximize();
@@ -36,12 +37,12 @@ export function openHotbarEditor(user) {
   return editor;
 }
 
-/** The Players list: "Edit Hotbar" on each user, for the GM. */
+/** The Players list: "Edit Hotbar" on each user for a GM, and on their own name for a player. */
 export function addUserContextOption(_app, options) {
   options.push({
     label: "BHE.Editor.Menu",
     icon: '<i class="fa-solid fa-table-cells"></i>',
-    visible: () => game.user.isGM,
+    visible: li => game.user.isGM || userIdOf(li) === game.user.id,
     onClick: (_event, li) => openHotbarEditor(userIdOf(li))
   });
 }
@@ -59,10 +60,64 @@ export function watchUsers() {
     if ("name" in changes || "role" in changes) editor.refreshUsers();
     if (editor.userId === user.id && ("name" in changes || "role" in changes)) editor.render({ window: { title: editor.title } });
   });
+  // The page the shown user has on their second row (marked in the editor).
+  const onSetting = setting => {
+    if (!editor || setting.user !== editor.userId) return;
+    if (setting.key === `${MODULE_ID}.page` || setting.key === `${MODULE_ID}.enabled`) editor.render();
+  };
+  Hooks.on("createSetting", onSetting);
+  Hooks.on("updateSetting", onSetting);
+}
+
+/**
+ * A user setting of this module for any user. A GM's client holds every
+ * user's user settings; a player's only their own. Undefined if not stored.
+ */
+function userSetting(user, key) {
+  if (user.id === game.user.id) return game.settings.get(MODULE_ID, key);
+  return game.settings.storage.get("user")?.find(s => s.key === `${MODULE_ID}.${key}` && s.user === user.id)?.value;
+}
+
+/** Macros made from an empty slot are flagged with their default name until someone fills them in. */
+const BLANK_FLAG = "blank";
+/** A flagged macro older than this is a leftover, not one someone is still filling in. */
+const BLANK_AGE_MS = 10 * 60 * 1000;
+
+/**
+ * Remove macros made from an empty slot that were never filled in: a reload,
+ * a crash or a closed browser with the new macro's sheet open leaves one behind.
+ * Each still has its default name, no command and the flag, and is old enough.
+ * A GM clears them from every hotbar; a player only their own.
+ */
+export async function sweepBlankMacros() {
+  try {
+    const now = Date.now();
+    const blanks = game.macros.filter(m => {
+      const blank = m.flags?.[MODULE_ID]?.[BLANK_FLAG];
+      return typeof blank === "string" && m.name === blank && !m.command && m.isOwner
+        && now - (m._stats?.createdTime ?? now) > BLANK_AGE_MS;
+    });
+    for (const macro of blanks) {
+      for (const user of game.users) {
+        if (!game.user.isGM && user.id !== game.user.id) continue;
+        for (const [slot, id] of Object.entries(user.hotbar)) {
+          if (id === macro.id) await assign(user.id, null, Number(slot));
+        }
+      }
+      await macro.delete();
+    }
+  } catch (error) {
+    console.error(`${MODULE_ID} |`, error);
+  }
 }
 
 function userIdOf(li) {
   return li?.dataset.userId ?? li?.closest("[data-user-id]")?.dataset.userId;
+}
+
+/** Whether this client may make a new script macro from an empty slot. */
+function canCreateMacro() {
+  return game.user.isGM || (CONFIG.Macro.documentClass.canUserCreate(game.user) && game.user.can("MACRO_SCRIPT"));
 }
 
 /**
@@ -330,6 +385,7 @@ function defineEditor() {
       position: { width: "auto", height: "auto" },
       actions: {
         slot: HotbarEditor.#onSlot,
+        newMacro: HotbarEditor.#onNewMacro,
         macroDirectory: HotbarEditor.#onMacroDirectory
       }
     };
@@ -378,11 +434,12 @@ function defineEditor() {
       ];
     }
 
-    /** The title bar's user picker sits beside the (visually hidden) title. */
+    /** A GM's title bar has a user picker beside the (visually hidden) title; a player's shows the title. */
     async _renderFrame(options) {
       const frame = await super._renderFrame(options);
       const title = frame.querySelector(".window-title");
-      if (title) {
+      if (!game.user.isGM) frame.classList.add("bhe-own-hotbar");
+      else if (title) {
         const select = document.createElement("select");
         select.className = "bhe-editor-user";
         select.setAttribute("aria-label", game.i18n.localize("BHE.Editor.User"));
@@ -432,6 +489,8 @@ function defineEditor() {
       const context = await super._prepareContext(options);
       const user = this.user;
       const pages = [];
+      // The page this user has on their second row, if it's on and readable here.
+      const rowTwo = user && userSetting(user, "enabled") ? clampPage(userSetting(user, "page")) : null;
       if (user) for (let page = 1; page <= PAGE_COUNT; page++) {
         const slots = user.getHotbarMacros(page).map((entry, i) => {
           const macro = entry.macro;
@@ -448,12 +507,18 @@ function defineEditor() {
               ? `${position}: ${macro.name}${hidden ? ` (${hiddenText})` : ""}`
               : `${position}: ${game.i18n.localize("BHE.Editor.Empty")}`,
             cssClass: macro ? "full" : "open",
+            macroId: macro?.id ?? "",
             hidden
           };
         });
-        pages.push({ page, slots });
+        pages.push({ page, slots, rowTwo: page === rowTwo });
       }
-      return Object.assign(context, { pages, size: PAGE_SIZE });
+      return Object.assign(context, {
+        pages,
+        size: PAGE_SIZE,
+        canCreate: canCreateMacro(),
+        rowTwoText: game.i18n.format("BHE.Editor.RowTwo", { name: user?.name ?? "" })
+      });
     }
 
     /** Re-render when the shown user's hotbar or any macro changes, hooks or not. */
@@ -469,6 +534,7 @@ function defineEditor() {
 
     async _onFirstRender(context, options) {
       await super._onFirstRender(context, options);
+      sweepBlankMacros();
       this._createContextMenu(this.#menuOptions, ".slot.full", {
         fixed: true,
         hookName: "getBheEditorSlotOptions",
@@ -530,7 +596,8 @@ function defineEditor() {
         const li = event.target.closest?.(".slot");
         if (!li || (event.key !== "Enter" && event.key !== " ")) return;
         event.preventDefault();
-        li.click();
+        // On an empty slot the key does what the "+" does.
+        (li.querySelector(".bhe-new") ?? li).click();
       });
     }
 
@@ -547,6 +614,11 @@ function defineEditor() {
       return id ? game.macros.get(id) ?? null : null;
     }
 
+    /** The macro a slot showed when it was drawn (what a menu opened on it means), even if the slot changed since. */
+    #macroOf(li) {
+      return li.dataset.macroId ? game.macros.get(li.dataset.macroId) ?? null : null;
+    }
+
     /** Delete a slot's macro (Foundry asks to confirm), then clear the slot. */
     async #delete(li) {
       try {
@@ -558,8 +630,12 @@ function defineEditor() {
 
     async #deleteSlot(li) {
       const user = this.user;
-      const macro = this.#macroAt(li, user);
+      const macro = this.#macroOf(li);
       if (!macro) return;
+      if (!macro.isOwner) {
+        ui.notifications.warn(game.i18n.format("BHE.Editor.NotOwner", { macro: esc(macro.name) }));
+        return;
+      }
       const slot = li.dataset.slot;
       await macro.deleteDialog();
       if (!game.macros.has(macro.id) && game.users.get(user.id)?.hotbar[slot] === macro.id) {
@@ -572,46 +648,72 @@ function defineEditor() {
         {
           label: "MACRO.Edit",
           icon: '<i class="fa-solid fa-edit"></i>',
-          onClick: (_event, li) => this.#macroAt(li)?.sheet.render({ force: true })
+          onClick: (_event, li) => this.#macroOf(li)?.sheet.render({ force: true })
         },
         {
           label: "BHE.Editor.Remove",
           icon: '<i class="fa-solid fa-xmark"></i>',
-          onClick: (_event, li) => assign(this.userId, null, Number(li.dataset.slot)).catch(error => this.#report(error))
+          onClick: (_event, li) => this.#remove(li)
         },
         {
           label: "MACRO.Delete",
           icon: '<i class="fa-solid fa-trash"></i>',
+          visible: li => !!this.#macroOf(li)?.isOwner,
           onClick: (_event, li) => this.#delete(li)
         }
       ];
     }
 
-    /**
-     * Click a full slot to edit its macro; an empty one to make a new macro there. A new macro closed still with its
-     * default name and no command is removed again.
-     */
+    /** Remove from Slot: only if the slot still holds the macro the menu was opened on. */
+    async #remove(li) {
+      const slot = Number(li.dataset.slot);
+      if (this.user?.hotbar[slot] !== li.dataset.macroId) {
+        ui.notifications.warn("BHE.Editor.SlotChanged", { localize: true });
+        return;
+      }
+      await assign(this.userId, null, slot).catch(error => this.#report(error));
+    }
+
+    /** Click a full slot to edit its macro. */
     static async #onSlot(event, target) {
-      const user = this.user;
-      if (!user) return;
-      const macro = this.#macroAt(target, user);
+      const macro = this.#macroAt(target);
       if (macro) return macro.sheet.render({ force: true });
-      if (this.#creating) return;
+    }
+
+    /**
+     * The "+" on an empty slot makes a new macro there and opens it. One closed
+     * still with its default name and no command is removed again; one left
+     * open when the page goes away is swept up later (sweepBlankMacros).
+     */
+    static async #onNewMacro(event, target) {
+      const user = this.user;
+      const li = target.closest(".slot");
+      if (!user || !li || this.#macroAt(li, user) || this.#creating || !canCreateMacro()) return;
       this.#creating = true;
       try {
         const cls = CONFIG.Macro.documentClass;
         const name = cls.defaultName({ type: "script" });
-        const created = await cls.create({ name, type: "script", scope: "global", img: "icons/svg/dice-target.svg" });
+        const created = await cls.create({
+          name,
+          type: "script",
+          scope: "global",
+          img: "icons/svg/dice-target.svg",
+          flags: { [MODULE_ID]: { [BLANK_FLAG]: name } }
+        });
         if (!created) return;
-        const slot = Number(target.dataset.slot);
+        const slot = Number(li.dataset.slot);
         await this.#place(created, user, slot, undefined, { quiet: true });
         const sheet = created.sheet;
-        // Another module's macro sheet may not be an ApplicationV2; then a blank one is simply left.
+        // Another module's macro sheet may not be an ApplicationV2; then the sweep handles a blank one.
         sheet.addEventListener?.("close", async () => {
-          if (!game.macros.has(created.id)) return;
-          if (created.name === name && !created.command) {
-            if (game.users.get(user.id)?.hotbar[slot] === created.id) await assign(user.id, null, slot);
-            await created.delete();
+          try {
+            if (!game.macros.has(created.id)) return;
+            if (created.name === name && !created.command) {
+              if (game.users.get(user.id)?.hotbar[slot] === created.id) await assign(user.id, null, slot);
+              await created.delete();
+            } else await created.unsetFlag(MODULE_ID, BLANK_FLAG);
+          } catch (error) {
+            this.#report(error);
           }
         }, { once: true });
         await sheet.render({ force: true });
@@ -709,7 +811,7 @@ function defineEditor() {
 
     /** Warn when a macro will open or use something the player can't see. */
     #checkTarget(doc, type, user) {
-      if (!doc || user.isGM) return;
+      if (!doc || user.isGM || user.id === game.user.id) return;
       const level = type === "RollTable" ? "OBSERVER" : "LIMITED";
       const owner = doc.parent ?? doc;
       if (owner.testUserPermission?.(user, level) ?? true) return;
@@ -718,8 +820,9 @@ function defineEditor() {
 
     /** Put a macro in a slot of a user's hotbar, sharing it with them if they can't run it. */
     async #place(macro, user, slot, fromSlot, { quiet = false } = {}) {
-      if (!user.isGM && !canRun(macro, user)) {
-        await macro.update({ [`ownership.${user.id}`]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER });
+      // Only a GM shares; Limited lets the player run it without seeing its command.
+      if (game.user.isGM && !user.isGM && !canRun(macro, user)) {
+        await macro.update({ [`ownership.${user.id}`]: CONST.DOCUMENT_OWNERSHIP_LEVELS.LIMITED });
         if (!quiet) ui.notifications.info(game.i18n.format("BHE.Editor.Shared", { macro: esc(macro.name), name: esc(user.name) }));
       }
       // Queued, and against the latest User object (a role change replaces it).
