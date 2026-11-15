@@ -34,7 +34,7 @@ https://github.com/Sir-Bayard/bayards-hotbar-expansion/releases/latest/download/
 
 Foundry's **Update** button then picks up each new release. You can also download `module.zip` from the [latest release](https://github.com/Sir-Bayard/bayards-hotbar-expansion/releases/latest) and unzip it into `Data/modules/bayards-hotbar-expansion`.
 
-Requires Foundry VTT 14 (verified on 14.369). It works with any game system.
+Requires Foundry VTT 14 (verified on 14.370). It works with any game system.
 
 ## What it does
 

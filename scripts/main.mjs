@@ -1,5 +1,8 @@
 import { addUserContextOption, openHotbarEditor, watchUsers } from "./editor.mjs";
-import { ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, accentColor, chatLift, clampPage, clampSlots, clampStrength, fitSlotSize, gridStartAfter, slotFor, textOn } from "./helpers.mjs";
+import {
+  ACCENTS, CUSTOM_DEFAULT, PAGE_SIZE, accentColor, chatLift, clampPage, clampSlots, clampStrength, fitSlotSize,
+  gridStartAfter, serial, slotFor, textOn
+} from "./helpers.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
 const TEMPLATE = `modules/${MODULE_ID}/templates/expansion.hbs`;
@@ -59,7 +62,7 @@ function defineExpansionBar() {
 
     /** Leave core's list of macro apps when the row is switched off. */
     _onClose(options) {
-      super._onClose?.(options);
+      super._onClose(options);
       const i = game.macros.apps.indexOf(this);
       if (i >= 0) game.macros.apps.splice(i, 1);
     }
@@ -110,7 +113,7 @@ function applyAccent(preview = null) {
  * custom color and strength when they don't apply.
  */
 function onRenderSettings(app, html) {
-  const root = html instanceof HTMLElement ? html : html?.[0];
+  const root = html;
   if (!root?.querySelector(`[name="${MODULE_ID}.accent"]`)) return;
   // The window's element survives its re-renders; bind once per window.
   if (root.dataset.bheBound) return syncSettings(root);
@@ -297,13 +300,14 @@ function contentRect(element) {
 }
 
 /* -------------------------------------------- */
-/*  The floating chat input                     */
+/*  The right-hand column                       */
 /* -------------------------------------------- */
 
 /**
- * When the sidebar isn't on the Chat tab, Foundry floats the chat input at the
- * bottom of the right-hand column. If the second row reaches under it, lift the
- * column so its bottom clears the row.
+ * Foundry's right-hand column holds the floating chat input (when the sidebar
+ * isn't on the Chat tab) and docked panels such as PF2e HUD's combat tracker.
+ * If the second row reaches under any of them, lift the whole column so its
+ * bottom clears the row.
  */
 function liftChat(clearOnly = false) {
   const column = document.getElementById(RIGHT_COLUMN);
@@ -352,7 +356,7 @@ function liftChat(clearOnly = false) {
 
 let pending = null;
 
-/** Re-place the row and re-check the chat input once the page has settled. */
+/** Re-place and fit the row, and lift the right-hand column, once the page has settled. */
 function schedule() {
   if (pending) return;
   pending = setTimeout(() => {
@@ -402,7 +406,7 @@ Hooks.once("init", () => {
     config: true,
     type: Boolean,
     default: false,
-    onChange: value => (value ? startBar() : stopBar())
+    onChange: () => syncBar()
   });
 
   game.settings.register(MODULE_ID, "slots", {
@@ -488,20 +492,44 @@ Hooks.once("init", () => {
 let ExpansionHotbar = null;
 let observer = null;
 
+/**
+ * Starting and stopping take a few awaits each, and a change can arrive while
+ * one is under way (the setting saved twice quickly, or from the same user's
+ * other tab). Run them one at a time, each making the row match the setting
+ * as it is saved when its turn comes.
+ */
+const switching = serial(error => console.error(`${MODULE_ID} |`, error));
+
+function syncBar() {
+  // Before ready, core's hotbar isn't drawn yet; the ready hook syncs once it is.
+  if (!game.ready) return Promise.resolve();
+  return switching(() => (game.settings.get(MODULE_ID, "enabled") ? startBar() : stopBar()));
+}
+
+/** Catch #hotbar being shown, hidden or resized without any app rendering. */
+function ensureObserver() {
+  const hotbar = document.getElementById("hotbar");
+  if (!hotbar || observer) return;
+  observer = new ResizeObserver(() => schedule());
+  observer.observe(hotbar);
+}
+
 /** Show the second row (the user's "Show the second row" setting). */
 async function startBar() {
-  if (bar?.rendered) return;
+  if (bar?.rendered) return ensureObserver();
   ExpansionHotbar ??= defineExpansionBar();
   bar ??= new ExpansionHotbar();
-  // changePage only re-renders a bar that is already on screen.
-  await bar.changePage(clampPage(game.settings.get(MODULE_ID, "page")));
-  await bar.render({ force: true });
-  // Catch #hotbar being shown, hidden or resized without any app rendering.
-  const hotbar = document.getElementById("hotbar");
-  if (hotbar && typeof ResizeObserver === "function") {
-    observer = new ResizeObserver(() => schedule());
-    observer.observe(hotbar);
+  try {
+    // changePage only re-renders a bar that is already on screen.
+    await bar.changePage(clampPage(game.settings.get(MODULE_ID, "page")));
+    await bar.render({ force: true });
+  } catch (error) {
+    // Start afresh next time rather than reuse a half-made row.
+    bar?.element?.remove();
+    bar = null;
+    throw error;
   }
+  ensureObserver();
   schedule();
 }
 
@@ -533,7 +561,7 @@ Hooks.once("ready", async () => {
     editHotbar: openHotbarEditor
   };
   window.addEventListener("resize", foundry.utils.debounce(schedule, 100));
-  if (game.settings.get(MODULE_ID, "enabled")) await startBar();
+  await syncBar();
 });
 
 // Core's row re-renders when the user's hotbar changes; show the same change here.

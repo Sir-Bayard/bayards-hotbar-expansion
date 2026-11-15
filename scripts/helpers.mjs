@@ -120,3 +120,23 @@ export function clampStrength(value, fallback = 30) {
   if (!Number.isFinite(n)) return fallback;
   return Math.min(60, Math.max(10, n));
 }
+
+/**
+ * A queue that runs async jobs one after another, in the order they were added. A job that throws goes to onError
+ * and doesn't stop the jobs after it. Adding a job returns a promise that never rejects: it settles with the job's
+ * value once the job has run (undefined if it threw).
+ */
+export function serial(onError = () => {}) {
+  let tail = Promise.resolve();
+  const report = error => {
+    try {
+      onError(error);
+    } catch {
+      // A failing reporter must not jam the queue.
+    }
+  };
+  return job => {
+    tail = tail.then(() => job()).catch(report);
+    return tail;
+  };
+}

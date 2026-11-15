@@ -204,11 +204,12 @@
   flex-wrap: nowrap;
 }
 
+/* PF2e HUD's own variables, with fallbacks in case a HUD update renames them. */
 #pf2e-hud-persistent #bhe-hotbar .slot {
-  border-radius: var(--outer-border-radius);
-  background: var(--panel-background);
-  width: var(--bhe-fit-size, var(--row-2fr));
-  height: var(--bhe-fit-size, var(--row-2fr));
+  border-radius: var(--outer-border-radius, 10px);
+  background: var(--panel-background, var(--slot-color));
+  width: var(--bhe-fit-size, var(--row-2fr, var(--hotbar-size)));
+  height: var(--bhe-fit-size, var(--row-2fr, var(--hotbar-size)));
 }
 
 #pf2e-hud-persistent #bhe-hotbar .slot.drop-target {
@@ -268,7 +269,7 @@
   border-color: var(--bhe-accent);
 }
 
-/* Settings window: greyed out when the accent choice makes them unused. */
+/* Settings window: grayed out when the accent choice makes them unused. */
 .bhe-setting-off {
   opacity: 0.45;
 }

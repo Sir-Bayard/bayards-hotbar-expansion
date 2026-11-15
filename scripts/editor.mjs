@@ -26,7 +26,7 @@ export function openHotbarEditor(user) {
   if (editor && !editor.closing) {
     editor.switchUser(target);
     if (editor.minimized) editor.maximize();
-    if (editor.rendered) editor.bringToFront?.();
+    if (editor.rendered) editor.bringToFront();
     return editor;
   }
   // A window still fading out keeps its own id; the new one gets another.
@@ -62,8 +62,7 @@ export function watchUsers() {
 }
 
 function userIdOf(li) {
-  const el = li?.jquery ? li[0] : li;
-  return el?.dataset?.userId ?? el?.closest?.("[data-user-id]")?.dataset.userId;
+  return li?.dataset.userId ?? li?.closest("[data-user-id]")?.dataset.userId;
 }
 
 /**
@@ -80,9 +79,14 @@ function assign(userId, macro, slot, options) {
   return next;
 }
 
+/** Notifications render markup, and names can be written by players: escape them. */
+function esc(text) {
+  return foundry.utils.escapeHTML(String(text ?? ""));
+}
+
 /** Whether a user can run a macro (Limited is enough; it hides the command). */
 function canRun(macro, user) {
-  return macro.canUserExecute?.(user) ?? macro.testUserPermission(user, "LIMITED");
+  return macro.canUserExecute(user);
 }
 
 /* -------------------------------------------- */
@@ -306,7 +310,8 @@ function defineEditor() {
   const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
   // Sized by its grid, so it keeps only its place.
-  EditorClass = class HotbarEditor extends rememberWindow(HandlebarsApplicationMixin(ApplicationV2), `${MODULE_ID}.editor`, { size: false }) {
+  const Base = rememberWindow(HandlebarsApplicationMixin(ApplicationV2), `${MODULE_ID}.editor`, { size: false });
+  EditorClass = class HotbarEditor extends Base {
     constructor(options) {
       super(options);
       this.userId = options.userId;
@@ -413,9 +418,7 @@ function defineEditor() {
     }
 
     static #onMacroDirectory() {
-      const tab = ui.macros;
-      if (tab?.renderPopout) tab.renderPopout();
-      else ui.sidebar?.changeTab?.("macros", "primary");
+      ui.macros.renderPopout();
     }
 
     /** @override */
@@ -597,6 +600,7 @@ function defineEditor() {
         const slot = Number(target.dataset.slot);
         await this.#place(created, user, slot, undefined, { quiet: true });
         const sheet = created.sheet;
+        // Another module's macro sheet may not be an ApplicationV2; then a blank one is simply left.
         sheet.addEventListener?.("close", async () => {
           if (!game.macros.has(created.id)) return;
           if (created.name === name && !created.command) {
@@ -615,8 +619,11 @@ function defineEditor() {
     #onDragStart(event, li) {
       const macro = this.#macroAt(li);
       if (!macro) return event.preventDefault();
-      // Not core's "slot" key: core would read it as a slot on the GM's own hotbar.
-      const data = foundry.utils.mergeObject(macro.toDragData(), { bheEditor: this.userId, bheSlot: li.dataset.slot });
+      // Not core's "slot" key for another user's hotbar: core would read it as a slot on the GM's own hotbar. On the
+      // GM's own hotbar it is that slot, so a drop on the first or second row moves the macro rather than copying it.
+      const extra = { bheEditor: this.userId, bheSlot: li.dataset.slot };
+      if (this.userId === game.user.id) extra.slot = li.dataset.slot;
+      const data = foundry.utils.mergeObject(macro.toDragData(), extra);
       event.dataTransfer.setData("text/plain", JSON.stringify(data));
     }
 
@@ -660,7 +667,7 @@ function defineEditor() {
 
       const cls = CONFIG[data.type]?.documentClass;
       if (!cls?.fromDropData) {
-        ui.notifications.warn(game.i18n.format("BHE.Editor.Unsupported", { type: data.type }));
+        ui.notifications.warn(game.i18n.format("BHE.Editor.Unsupported", { type: esc(data.type) }));
         return;
       }
       const doc = await cls.fromDropData(data);
@@ -676,8 +683,15 @@ function defineEditor() {
       if (data.type === "Macro") {
         if (doc.pack) macro = await cls.create(game.macros.fromCompendium(doc));
         else macro = game.macros.has(doc.id) ? doc : await cls.create(doc.toObject());
-      } else if (data.type === "RollTable") macro = await ui.hotbar._createRollTableRollMacro(doc);
-      else macro = await ui.hotbar._createDocumentSheetToggle(doc);
+      } else {
+        // Core's hotbar builds these macros with methods it doesn't document; check they are still there.
+        const make = data.type === "RollTable" ? "_createRollTableRollMacro" : "_createDocumentSheetToggle";
+        if (typeof ui.hotbar[make] !== "function") {
+          ui.notifications.error("BHE.Editor.CoreChanged", { localize: true });
+          return;
+        }
+        macro = await ui.hotbar[make](doc);
+      }
       if (!macro) return;
       const now = game.users.get(user.id);
       if (!now) return;
@@ -693,14 +707,14 @@ function defineEditor() {
       const level = type === "RollTable" ? "OBSERVER" : "LIMITED";
       const owner = doc.parent ?? doc;
       if (owner.testUserPermission?.(user, level) ?? true) return;
-      ui.notifications.warn(game.i18n.format("BHE.Editor.TargetHidden", { name: user.name, document: doc.name }));
+      ui.notifications.warn(game.i18n.format("BHE.Editor.TargetHidden", { name: esc(user.name), document: esc(doc.name) }));
     }
 
     /** Put a macro in a slot of a user's hotbar, sharing it with them if they can't run it. */
     async #place(macro, user, slot, fromSlot, { quiet = false } = {}) {
       if (!user.isGM && !canRun(macro, user)) {
         await macro.update({ [`ownership.${user.id}`]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER });
-        if (!quiet) ui.notifications.info(game.i18n.format("BHE.Editor.Shared", { macro: macro.name, name: user.name }));
+        if (!quiet) ui.notifications.info(game.i18n.format("BHE.Editor.Shared", { macro: esc(macro.name), name: esc(user.name) }));
       }
       // Queued, and against the latest User object (a role change replaces it).
       await assign(user.id, macro, slot, { fromSlot });

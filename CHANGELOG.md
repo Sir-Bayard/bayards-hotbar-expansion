@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1
+
+- Turning the second row on and off in quick succession no longer shows an error or leaves the row half on: it always ends as the setting says.
+- In the hotbar editor, dragging a macro from your own hotbar onto the first or second row moves it there, as a drag between the rows does, instead of copying it.
+- Inside PF2e HUD, the second row keeps a usable size and look if a PF2e HUD update renames the styles it borrows.
+- The message for something the editor can't put on a hotbar now says what kind of thing was dropped.
+
 ## 0.4.0
 
 - The GM's hotbar editor opens where you last put it, in each browser (it sizes itself to the grid).
