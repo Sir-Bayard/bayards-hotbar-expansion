@@ -1,6 +1,6 @@
 # Bayard's Hotbar Expansion
 
-A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys, a slot count you choose and an optional accent color. It works with Foundry's own layout and with PF2e HUD's persistent HUD. For the GM, it also opens any user's whole hotbar for editing.
+A second hotbar row beside the first. It shows any of the five hotbar pages, with its own page selector, its own keys, a slot count you choose and an optional accent color. It works with Foundry's own layout and with PF2e HUD's persistent HUD. It also opens a whole hotbar for editing: any user's for the GM, your own for a player.
 
 ## What it looks like
 
@@ -14,15 +14,15 @@ A second hotbar row beside the first. It shows any of the five hotbar pages, wit
 
 ![The settings](docs/images/settings.png)
 
-**The settings.** Each user turns the row on for themselves. The accent shows on the row while you pick it.
+**The settings.** Each user turns the row on for themselves; while it's off, the rest are grayed out. The accent shows on the row while you pick it.
 
 ![Accent colors](docs/images/accents.png)
 
 **Accent colors.** The five presets and a custom color; your player color is the other choice.
 
-![The GM's hotbar editor](docs/images/editor.png)
+![The hotbar editor](docs/images/editor.png)
 
-**The GM's hotbar editor.** A player's five pages at once. The red border marks a macro the player can't run.
+**The hotbar editor.** A player's five pages at once. The red border marks a macro the player can't run; the eye marks the page on their second row.
 
 ## Install
 
@@ -44,16 +44,18 @@ Foundry keeps 50 hotbar slots per user, on five pages of ten, and shows one page
 
 - **Each user decides.** GM or player, each turns it on for themselves, on any computer. Turning it off puts everything back.
 - **The same hotbar.** Nothing new is stored. Click, drop, drag between slots and rows, and right-click, as on the first row. The hotbar lock applies to both.
-- **Its own page.** Its arrows flip it through pages 1 to 5 without touching the first row. It starts on page 2 and remembers where you leave it.
-- **Its own keys.** Alt+Shift+1 to Alt+Shift+0 run its slots (change them in **Configure Controls**). Alt+1 to 5 still switch the first row's page.
-- **Slot count.** Show 1 to 10 slots ("Second row: slots shown", per browser).
+- **Its own page.** Its arrows flip it through pages 1 to 5 without touching the first row; so do the mouse wheel over them and Alt+Shift+Up and Down. Click the page number to pick a page. It starts on page 2 and remembers where you leave it.
+- **Its own keys.** Alt+Shift+1 to Alt+Shift+0 run its slots; a slot's tooltip names its key. Change them in **Configure Controls**. Alt+1 to 5 still switch the first row's page.
+- **Slot count.** Show 1 to 10 slots ("Slots shown", per browser).
+
+With the row off, its other settings are grayed out.
 
 ## Accent color
 
-An accent color tells the rows apart at a glance ("Second row: accent color"):
+An accent color tells the rows apart at a glance ("Accent color"):
 
 - It colors the slot borders, number badges and page selector, and tints the empty slots.
-- Crimson, Violet, Blue, Green, Black, your player color or a custom color; "Second row: accent strength" sets 10% to 60%. The default, none, looks like the first row.
+- Crimson, Violet, Blue, Green, Charcoal, your player color or a custom color; "Accent strength" sets 10% to 60%. The default, none, looks like the first row.
 - It shows on the row as you change it in the settings window, and goes back if you close without saving. Each user picks their own.
 
 ## Where it sits
@@ -64,23 +66,22 @@ An accent color tells the rows apart at a glance ("Second row: accent color"):
 - **The bottom right:** when the row reaches under the right-hand column (the floating chat input, PF2e HUD's combat tracker), the column moves up. Turn off "Lift panels at the bottom right" to have the row shrink instead.
 - When the first row is hidden, so is the second.
 
-## For the GM: edit a player's hotbar
+## Edit a whole hotbar
 
-Right-click a user in the Players list and choose **Edit Hotbar**: a window with all five pages of their hotbar, updated as they change it. The name in the title bar switches to another user; the button beside it opens the Macro Directory.
+Right-click a user in the Players list and choose **Edit Hotbar**: a window with all five pages of their hotbar, updated as they change it. A GM can open anyone's, and the name in the title bar switches to another user; a player can open their own (right-click your own name). The button in the title bar opens the Macro Directory. An eye beside a page number marks the page on that user's second row.
 
 - **Add:** drop a macro from the Macro Directory or a compendium (imported into the world). Anything else becomes a macro as it would on Foundry's hotbar: in Pathfinder 2e, strikes, actions, items, conditions and effects become PF2e's own macros; roll tables a draw macro; other documents a macro that opens their sheet.
 - **Move:** drag to another slot or page; a filled slot swaps.
-- **Edit:** click a macro to open it, or an empty slot to make one (closed with no name or command, it's removed again).
-- **Remove or delete:** right-click for Edit, Remove from Slot (the macro stays in the world) and Delete. Shift+right-click deletes (Foundry asks first).
-- **What it shares for you:** a player can run a macro they have Limited permission on. One you put on their hotbar that they can't run is shared with them as Observer, with a note. One already there that they can't run has a red border and an eye-slash mark.
-- **What it can't fix:** a macro made from an item, a strike or a journal entry also needs the player to be able to open that item, character or entry. You're warned when they can't.
-
-Only a GM can open it.
+- **Edit:** click a macro to open it. On an empty slot, click the **+** to make a new one (closed with no name or command, it's removed again).
+- **Remove or delete:** right-click for Edit, Remove from Slot (the macro stays in the world) and Delete. Shift+right-click deletes (Foundry asks first). A player can delete only their own macros.
+- **Copy or clear a page:** click a page number. A GM can copy any page of any user's hotbar onto it, or a whole hotbar onto this one (an exact copy, empty slots included). **Clear Page** empties it; the macros stay in the world.
+- **What it shares for you (GM):** a player can run a macro they have Limited permission on, which hides its command. One you put on their hotbar that they can't run is shared with them as Limited, with a note. Macros shared as Observer before 0.5.0 stay that way until you change them. One already there that they can't run has a red border and an eye-slash mark.
+- **What it can't fix:** a macro made from an item, a strike or a journal entry also needs the player to be able to open that item, character or entry. You're warned when they can't. And if a player changes their hotbar at the very moment you copy onto it, one of the two changes can be lost.
 
 ## Other modules
 
 - The second row is Foundry's own hotbar underneath, so modules that react to `renderHotbar` (interface themes, say) see it too.
-- The editor passes drops it doesn't handle to the `hotbarDrop` hook, so the game system builds its macros. A handler that writes the GM's hotbar directly, instead of calling `assignHotbarMacro`, can't place its macro from the editor.
+- The editor passes drops it doesn't handle to the `hotbarDrop` hook (with `ui.hotbar` as the hotbar), so the game system builds its macros. A handler that writes the current user's hotbar directly, instead of calling `assignHotbarMacro`, can't place its macro from the editor.
 
 ## API
 
@@ -88,7 +89,7 @@ Only a GM can open it.
 
 - `bar`: the second row, or `null` while it's off. `bar.changePage(3)` shows page 3; `bar.page` is the page shown.
 - `executeSlot(n)`: runs slot n (1 to 10) of the second row's page.
-- `editHotbar(user)`: opens the GM's editor on a user (a User or a user id). GM only.
+- `editHotbar(user)`: opens the editor on a user (a User or a user id): any user for a GM, only their own for a player.
 
 ## Changes
 

@@ -1,11 +1,32 @@
 # Changelog
 
-## 0.4.1
+## 0.5.0
+
+**Two changes to how the hotbar editor works:**
+
+- **Macros are shared as Limited, not Observer.** A macro a GM puts on a player's hotbar that the player can't run is now shared with them as Limited: they can run it but can't read its command. Macros shared as Observer by earlier versions stay Observer until you change their permissions.
+- **Players can open the editor on their own hotbar.** Right-click your own name in the Players list and choose Edit Hotbar. A player sees only their own hotbar, shares nothing and can delete only their own macros. Until now only a GM could open it.
+
+**New**
+
+- In the editor, click a page number to copy a page from any user's hotbar, copy a whole hotbar, or clear the page. Copies are exact, empty slots included, and macros the player can't run are shared as Limited. Copying is for the GM; a player can clear their own pages.
+- New macros come from a **+** on an empty slot, not from any click on it. A blank new macro left behind by a reload or a closed browser is cleared up later.
+- The editor marks the page each user has on their second row.
+- Second row: Alt+Shift+Up and Alt+Shift+Down flip its page, clicking its page number picks a page, the mouse wheel over its page selector flips pages, and a full slot's tooltip names its key.
+- Settings lose the "Second row:" prefix, and while the row is off its other settings are grayed out.
+- The Black accent is now Charcoal, light enough to see on dark slots.
+- The accent tint no longer replaces a theme's own slot shadow or glow.
+- The editor's help is one line.
+
+**Fixed**
 
 - Turning the second row on and off in quick succession no longer shows an error or leaves the row half on: it always ends as the setting says.
 - In the hotbar editor, dragging a macro from your own hotbar onto the first or second row moves it there, as a drag between the rows does, instead of copying it.
 - Inside PF2e HUD, the second row keeps a usable size and look if a PF2e HUD update renames the styles it borrows.
 - The message for something the editor can't put on a hotbar now says what kind of thing was dropped.
+- Remove from Slot removes only the macro you opened the menu on; if the slot has changed since, it says so and removes nothing.
+- The second row does far less work while other windows redraw (PF2e HUD in combat, for one), with its layout unchanged, and no longer redraws when the first row changes page.
+- Modules that react to hotbar drops get Foundry's hotbar from the editor, not the editor window.
 
 ## 0.4.0
 
