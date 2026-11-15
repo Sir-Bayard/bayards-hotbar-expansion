@@ -15,14 +15,17 @@
 
 ## 0.3.0
 
-- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit Hotbar": a window with all five pages of their hotbar. Drop macros on it, or anything Foundry's hotbar takes (in PF2e: strikes, actions, items, conditions and effects, built the way PF2e builds them), drag to move or swap, click to edit or to make a new macro in an empty slot, right-click to remove from the slot or delete, Shift+right-click to delete. A macro you put on a player's hotbar that they can't run is shared with them (Observer); one they already have Limited permission on is left alone. You're warned when a macro made from an item, a strike or a journal entry points at something the player can't open. Pick another user from the name in the title bar to switch the window to their hotbar; a title-bar button opens the Macro Directory.
+- **Edit any user's hotbar (GM).** Right-click a user in the Players list and choose "Edit Hotbar": a window with all five pages of their hotbar.
+- Drop macros on it, or anything Foundry's hotbar takes (in PF2e: strikes, actions, items, conditions and effects, built the way PF2e builds them). Drag to move or swap.
+- Click a macro to edit it, or an empty slot to make a new macro there. Right-click to remove it from the slot or delete it; Shift+right-click deletes.
+- A macro you put on a player's hotbar that they can't run is shared with them (Observer); one they already have Limited permission on is left alone. You're warned when a macro made from an item, a strike or a journal entry points at something the player can't open.
+- Pick another user from the name in the title bar to switch the window to their hotbar; a title-bar button opens the Macro Directory.
 
 ## 0.2.0
 
 - **The second row is now off until you turn it on.** After updating, tick "Show the second row" in Configure Settings, under this module, to get it back. Each user (GM or player) decides for themselves, and turning it off puts the hotbar and the chat input back as they were, without a reload.
 - When the second row reaches under the right-hand column, the bottom of the whole column moves up: Foundry's floating chat input and panels docked under it, such as PF2e HUD's combat tracker, together. The second row keeps full-size slots. The setting is now called "Lift panels at the bottom right"; with it off, the second row shrinks to stop before those panels instead.
 - In Foundry's layout the two rows sit level when another module changes the hotbar's bottom margin (PF2e HUD does, even with its persistent HUD off).
-- README: pictures of the rows inside PF2e HUD and in Foundry's own layout, the settings and the accent colors.
 
 ## 0.1.0
 

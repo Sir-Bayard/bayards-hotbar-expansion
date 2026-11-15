@@ -6,19 +6,19 @@ A second hotbar row beside the first. It shows any of the five hotbar pages, wit
 
 ![Inside PF2e HUD](docs/images/hud.png)
 
-**Inside PF2e HUD.** The second row, here on page 2 with the Violet accent, sits right after the first, styled the way the HUD styles the hotbar.
+**Inside PF2e HUD.** The second row on page 2, with the Violet accent, styled the way the HUD styles the hotbar.
 
 ![Foundry's own layout](docs/images/core.png)
 
-**Foundry's own layout.** Both rows side by side, with no accent: the second row looks like the first, with its own page selector.
+**Foundry's own layout.** Both rows side by side, no accent.
 
 ![The settings](docs/images/settings.png)
 
-**The settings.** Each user turns the row on for themselves. The accent color shows on the row while you pick it (Crimson here, not yet saved).
+**The settings.** Each user turns the row on for themselves. The accent shows on the row while you pick it.
 
 ![Accent colors](docs/images/accents.png)
 
-**Accent colors.** The five presets and a custom color; your own player color is the other choice.
+**Accent colors.** The five presets and a custom color; your player color is the other choice.
 
 ![The GM's hotbar editor](docs/images/editor.png)
 
@@ -36,54 +36,59 @@ Foundry's **Update** button then picks up each new release. You can also downloa
 
 Requires Foundry VTT 14 (verified on 14.370). It works with any game system.
 
+The second row is off until you turn it on: after enabling the module, each user who wants it ticks **Show the second row** in **Configure Settings**, under this module.
+
 ## What it does
 
-Foundry keeps 50 hotbar slots per user, on five pages of ten, and shows one page at a time. This module adds a second row that shows another page at the same time.
+Foundry keeps 50 hotbar slots per user, on five pages of ten, and shows one page at a time. The second row shows another page at the same time.
 
-**Turn it on:** the row is off until you tick "Show the second row" in **Configure Settings**, under this module. Each user (GM or player) decides for themselves, and the choice follows them to any computer. Turning it off puts everything back as it was.
-
-- **It is the same hotbar.** The second row shows one of your five pages, so a macro on page 2 appears there and nowhere new is stored. Click to run, drop macros, items and actions onto it, drag between slots and between the rows, and right-click to edit or remove, just as on the first row. The hotbar lock applies to both.
-- **Its own page.** The arrows beside the second row flip it through pages 1 to 5 without touching the first row. It starts on page 2 and remembers the page you leave it on, for your user on any computer.
-- **Its own keys.** Alt+Shift+1 to Alt+Shift+0 run slots 1 to 10 of the second row. Change them in **Configure Controls**. (Alt+1 to 5 are Foundry's keys for switching the first row's page.)
-- **Slot count.** Show 1 to 10 slots (setting "Second row: slots shown", kept per browser, since it depends on the screen). The keys follow: with six slots shown, Alt+Shift+7 does nothing.
+- **Each user decides.** GM or player, each turns it on for themselves, on any computer. Turning it off puts everything back.
+- **The same hotbar.** Nothing new is stored. Click, drop, drag between slots and rows, and right-click, as on the first row. The hotbar lock applies to both.
+- **Its own page.** Its arrows flip it through pages 1 to 5 without touching the first row. It starts on page 2 and remembers where you leave it.
+- **Its own keys.** Alt+Shift+1 to Alt+Shift+0 run its slots (change them in **Configure Controls**). Alt+1 to 5 still switch the first row's page.
+- **Slot count.** Show 1 to 10 slots ("Second row: slots shown", per browser).
 
 ## Accent color
 
-To tell the rows apart at a glance, give the second row an accent color (setting "Second row: accent color"): Crimson, Violet, Blue, Green, Black, your player color, or a custom color you pick. It colors the slot borders, fills the number badges (with black or white numbers, whichever reads better), outlines the page selector and tints the empty slots (a macro's icon covers its slot). "Second row: accent strength" sets how strong the tint and borders are, from 10% to 60%. While the settings window is open, the second row shows the color and strength as you change them; close the window without saving and it goes back. Each user picks their own, and it follows them to any computer. The default is none, which looks like the first row.
+An accent color tells the rows apart at a glance ("Second row: accent color"):
+
+- It colors the slot borders, number badges and page selector, and tints the empty slots.
+- Crimson, Violet, Blue, Green, Black, your player color or a custom color; "Second row: accent strength" sets 10% to 60%. The default, none, looks like the first row.
+- It shows on the row as you change it in the settings window, and goes back if you close without saving. Each user picks their own.
 
 ## Where it sits
 
-- **Foundry's layout:** both rows sit side by side, centered at the bottom of the screen.
-- **PF2e HUD's persistent HUD:** the second row sits right after the first, inside the HUD, styled the way the HUD styles the first row.
-- **Narrow screens:** the second row stays clear of the sidebar and (in Foundry's layout) of the player list. In Foundry's layout both rows first slide over into free space; if that isn't enough, the second row's slots get smaller, down to about half size. On a very narrow screen, or with PF2e HUD's middle placement on a narrow one, there may not be room for both rows even then; showing fewer slots helps.
-- **The bottom right:** Foundry's floating chat input (shown when the sidebar isn't on the Chat tab) and panels docked under it, such as PF2e HUD's combat tracker, sit at the bottom of the right-hand column. If the second row reaches under that column, the column moves up so both can be used. With "Lift panels at the bottom right" turned off, the second row shrinks to stop before those panels instead (the chat input may then cover it).
+- **Foundry's layout:** both rows side by side, centered at the bottom.
+- **PF2e HUD's persistent HUD:** right after the first row, styled to match.
+- **Narrow screens:** the row slides over, then shrinks its slots to about half size, to stay clear of the sidebar and the player list. A very narrow screen may still not fit both; show fewer slots.
+- **The bottom right:** when the row reaches under the right-hand column (the floating chat input, PF2e HUD's combat tracker), the column moves up. Turn off "Lift panels at the bottom right" to have the row shrink instead.
 - When the first row is hidden, so is the second.
 
 ## For the GM: edit a player's hotbar
 
-Right-click a user in the Players list (bottom left) and choose **Edit Hotbar**. A window shows all five pages of that user's hotbar, ten slots each. The user's name in the title bar is a menu: pick another user to switch the window to their hotbar. The code button beside it opens the Macro Directory, to drag macros from. The window opens where you last put it.
+Right-click a user in the Players list and choose **Edit Hotbar**: a window with all five pages of their hotbar, updated as they change it. The name in the title bar switches to another user; the button beside it opens the Macro Directory.
 
-- **Add:** drop a macro on a slot, from the Macro Directory or a compendium (compendium macros are imported into the world). Everything else becomes a macro the way it would on Foundry's own hotbar: in Pathfinder 2e, a strike or action from a character sheet becomes a strike or action macro, an item an item macro, and a condition or effect a toggle; roll tables become a "draw" macro, and other documents a macro that opens their sheet.
-- **Move:** drag a macro to another slot or page. Dropping it on a filled slot swaps the two.
-- **Edit:** click a macro to open it. Click an empty slot to make a new macro there (close it without giving it a name or command and it's removed again).
-- **Remove or delete:** right-click a macro for Edit, Remove from Slot (the macro stays in the world) and Delete. Shift+right-click deletes it straight away (Foundry still asks to confirm).
-- **Sharing:** a player can run a macro they have at least Limited permission on (Limited hides its command from them). When you put a macro on a player's hotbar that they can't run, it is shared with them as Observer, and a note says so. A macro already on their hotbar that they can't run has a red border and an eye-slash mark. A macro made from an item, a strike or a journal entry still needs the player to be able to open that item, character or entry; you're warned when they can't.
-- It updates as the player changes their own hotbar.
+- **Add:** drop a macro from the Macro Directory or a compendium (imported into the world). Anything else becomes a macro as it would on Foundry's hotbar: in Pathfinder 2e, strikes, actions, items, conditions and effects become PF2e's own macros; roll tables a draw macro; other documents a macro that opens their sheet.
+- **Move:** drag to another slot or page; a filled slot swaps.
+- **Edit:** click a macro to open it, or an empty slot to make one (closed with no name or command, it's removed again).
+- **Remove or delete:** right-click for Edit, Remove from Slot (the macro stays in the world) and Delete. Shift+right-click deletes (Foundry asks first).
+- **What it shares for you:** a player can run a macro they have Limited permission on. One you put on their hotbar that they can't run is shared with them as Observer, with a note. One already there that they can't run has a red border and an eye-slash mark.
+- **What it can't fix:** a macro made from an item, a strike or a journal entry also needs the player to be able to open that item, character or entry. You're warned when they can't.
 
 Only a GM can open it.
 
 ## Other modules
 
-The second row is built on Foundry's own hotbar, so modules that react when a hotbar is drawn (the `renderHotbar` hook) see it too. Interface themes use that to style both rows alike.
+- The second row is Foundry's own hotbar underneath, so modules that react to `renderHotbar` (interface themes, say) see it too.
+- The editor passes drops it doesn't handle to the `hotbarDrop` hook, so the game system builds its macros. A handler that writes the GM's hotbar directly, instead of calling `assignHotbarMacro`, can't place its macro from the editor.
 
-The GM's editor hands drops it doesn't handle itself to the same `hotbarDrop` hook Foundry's hotbar uses, so the game system can turn them into its own macros (Pathfinder 2e does). A module whose drop handler writes to the GM's own hotbar directly, instead of through Foundry's `assignHotbarMacro`, won't place its macro on the player's hotbar from the editor.
-
-## Macros
+## API
 
 `game.modules.get("bayards-hotbar-expansion").api`:
 
-- `bar`: the second row. `bar.changePage(3)` shows page 3; `bar.page` is the page shown.
+- `bar`: the second row, or `null` while it's off. `bar.changePage(3)` shows page 3; `bar.page` is the page shown.
 - `executeSlot(n)`: runs slot n (1 to 10) of the second row's page.
+- `editHotbar(user)`: opens the GM's editor on a user (a User or a user id). GM only.
 
 ## Changes
 
