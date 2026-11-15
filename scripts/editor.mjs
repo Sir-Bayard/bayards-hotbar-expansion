@@ -10,6 +10,7 @@
 import {
   PAGE_COUNT, PAGE_SIZE, clampPage, hotbarCopy, moveSource, pageSlots, withPageCleared, withPageCopied, writeQueue
 } from "./helpers.mjs";
+import { makeRedirect } from "./redirect.mjs";
 
 const MODULE_ID = "bayards-hotbar-expansion";
 const TEMPLATE = `modules/${MODULE_ID}/templates/editor.hbs`;
@@ -160,75 +161,18 @@ function canRun(macro, user) {
 /*  Catching a system's "put it on my hotbar"   */
 /* -------------------------------------------- */
 
-/** Catch slots count down from here; core rejects any slot below 1. */
-const FIRST_CATCH_SLOT = -100;
-const LAST_CATCH_SLOT = -100000;
-/** How long a drop waits for the system's assign before it lapses. */
-const CATCH_TIMEOUT_MS = 60000;
-
-/**
- * Systems (PF2e) build a macro from a drop on the hotbar and then call
- * game.user.assignHotbarMacro(macro, slot) with the slot they were given. The
- * editor passes each drop its own negative slot, which core rejects, and while
- * any are pending game.user.assignHotbarMacro is wrapped: a call for a pending
- * slot goes to that drop's handler instead; every other call passes through.
- * Each pending slot lapses after a minute (some branches never assign); a call
- * for one that has lapsed, while the wrapper is still in place, is reported
- * instead of reaching core, which would throw.
- */
-const pending = new Map();
-let nextKey = FIRST_CATCH_SLOT;
-let installed = null;
-
-function redirectAssign(handler) {
-  const key = nextKey--;
-  if (nextKey < LAST_CATCH_SLOT) nextKey = FIRST_CATCH_SLOT;
-  const timer = setTimeout(() => finishRedirect(key), CATCH_TIMEOUT_MS);
-  pending.set(key, { handler, timer });
-  installRedirect();
-  return key;
-}
-
-function finishRedirect(key) {
-  const entry = pending.get(key);
-  if (!entry) return null;
-  clearTimeout(entry.timer);
-  pending.delete(key);
-  if (!pending.size) uninstallRedirect();
-  return entry;
-}
-
-function installRedirect() {
-  if (installed) return;
-  const user = game.user;
-  const original = user.assignHotbarMacro;
-  const wrapper = function (macro, slot, options) {
-    const key = Number(slot);
-    const entry = finishRedirect(key);
-    if (!entry) {
-      if (key <= FIRST_CATCH_SLOT) {
-        ui.notifications.error("BHE.Editor.DropFailed", { localize: true });
-        return Promise.resolve();
-      }
-      return original.call(this, macro, slot, options);
-    }
-    return Promise.resolve()
-      .then(() => entry.handler(macro))
-      .catch(error => {
-        console.error(`${MODULE_ID} |`, error);
-        ui.notifications.error("BHE.Editor.DropFailed", { localize: true });
-      });
-  };
-  user.assignHotbarMacro = wrapper;
-  installed = { user, wrapper };
-}
-
-function uninstallRedirect() {
-  if (!installed) return;
-  // Leave it alone if something else has replaced it since.
-  if (installed.user.assignHotbarMacro === installed.wrapper) delete installed.user.assignHotbarMacro;
-  installed = null;
-}
+// See redirect.mjs: each drop that isn't a macro or a table goes to the
+// hotbarDrop hook with its own catch slot, and the system's assign for that
+// slot comes back to the drop instead of reaching core.
+const catcher = makeRedirect({
+  getUser: () => game.user,
+  onFailed: error => {
+    if (error) console.error(`${MODULE_ID} |`, error);
+    ui.notifications.error("BHE.Editor.DropFailed", { localize: true });
+  }
+});
+const redirectAssign = handler => catcher.redirect(handler);
+const finishRedirect = key => catcher.finish(key);
 
 /* -------------------------------------------- */
 
@@ -901,7 +845,8 @@ function defineEditor() {
             if (target) this.#checkTarget(target, data.type, now);
           }
         });
-        if (Hooks.call("hotbarDrop", this, data, key) === false) return;
+        // Handlers expect core's Hotbar as the first argument, not this window.
+        if (Hooks.call("hotbarDrop", ui.hotbar, data, key) === false) return;
         // A handler that placed its macro but didn't return false: done.
         if (!finishRedirect(key)) return;
       }
